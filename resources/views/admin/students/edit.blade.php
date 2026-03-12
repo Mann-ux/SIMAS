@@ -37,148 +37,143 @@
         </div>
 
         <!-- Card Body -->
-        <form action="{{ route('students.update', $student->id) }}" method="POST" class="px-8 py-8">
-            @csrf
-            @method('PUT')
+        <form action="{{ route('students.update', $student->nis) }}" method="POST" class="px-8 py-8">
+    @csrf
+    @method('PUT')
 
-            <div class="space-y-6">
-                
-                <!-- NISN -->
-                <div>
-                    <label for="nisn" class="block text-sm font-semibold text-gray-700 mb-2">
-                        NISN <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
-                            </svg>
-                        </div>
-                        <input 
-                            type="text" 
-                            name="nisn" 
-                            id="nisn" 
-                            value="{{ old('nisn', $student->nisn) }}"
-                            class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all duration-200 outline-none @error('nisn') border-red-500 @enderror"
-                            placeholder="Contoh: 0012345678"
-                            required
-                        >
-                    </div>
-                    @error('nisn')
-                    <p class="mt-2 text-sm text-red-600 flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                        </svg>
-                        {{ $message }}
-                    </p>
-                    @enderror
+    <div class="space-y-6">
+        
+        <div>
+            <label for="nis" class="block text-sm font-semibold text-gray-700 mb-2">
+                NIS <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
+                    </svg>
                 </div>
-
-                <!-- Nama Siswa -->
-                <div>
-                    <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Nama Lengkap <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                            </svg>
-                        </div>
-                        <input 
-                            type="text" 
-                            name="name" 
-                            id="name" 
-                            value="{{ old('name', $student->name) }}"
-                            class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all duration-200 outline-none @error('name') border-red-500 @enderror"
-                            placeholder="Contoh: Ahmad Santoso"
-                            required
-                        >
-                    </div>
-                    @error('name')
-                    <p class="mt-2 text-sm text-red-600 flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                        </svg>
-                        {{ $message }}
-                    </p>
-                    @enderror
-                </div>
-
-                <!-- Kelas -->
-                <div>
-                    <label for="classroom_id" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Kelas <span class="text-red-500">*</span>
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                        </div>
-                        <select 
-                            name="classroom_id" 
-                            id="classroom_id" 
-                            class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all duration-200 outline-none @error('classroom_id') border-red-500 @enderror appearance-none bg-white"
-                            required
-                        >
-                            <option value="">-- Pilih Kelas --</option>
-                            @foreach($classrooms as $classroom)
-                                <option value="{{ $classroom->id }}" {{ old('classroom_id', $student->classroom_id) == $classroom->id ? 'selected' : '' }}>
-                                    {{ $classroom->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </div>
-                    </div>
-                    @error('classroom_id')
-                    <p class="mt-2 text-sm text-red-600 flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                        </svg>
-                        {{ $message }}
-                    </p>
-                    @enderror
-                </div>
-
-                <!-- Current Data Info -->
-                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg">
-                    <div class="flex items-start">
-                        <svg class="w-5 h-5 text-yellow-500 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                        </svg>
-                        <div>
-                            <p class="text-sm font-medium text-yellow-800">Perhatian</p>
-                            <p class="text-sm text-yellow-700 mt-1">Pastikan perubahan data sudah sesuai sebelum menyimpan.</p>
-                        </div>
-                    </div>
-                </div>
-
+                <input 
+                    type="text" 
+                    name="nis" 
+                    id="nis" 
+                    value="{{ old('nis', $student->nis) }}"
+                    class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all duration-200 outline-none @error('nis') border-red-500 @enderror"
+                    placeholder="Contoh: 1024"
+                    required
+                >
             </div>
+            @error('nis')
+            <p class="mt-2 text-sm text-red-600 flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                {{ $message }}
+            </p>
+            @enderror
+        </div>
 
-            <!-- Form Actions -->
-            <div class="flex items-center justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
-                <a href="{{ route('students.index') }}" 
-                   class="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
-                    Batal
-                </a>
-                <button 
-                    type="submit" 
-                    class="px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
-                    <span class="flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        Update Data
-                    </span>
-                </button>
+        <div>
+            <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
+                Nama Lengkap <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                </div>
+                <input 
+                    type="text" 
+                    name="name" 
+                    id="name" 
+                    value="{{ old('name', $student->name) }}"
+                    class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all duration-200 outline-none @error('name') border-red-500 @enderror"
+                    placeholder="Contoh: Ahmad Santoso"
+                    required
+                >
             </div>
+            @error('name')
+            <p class="mt-2 text-sm text-red-600 flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                {{ $message }}
+            </p>
+            @enderror
+        </div>
 
-        </form>
+        <div>
+            <label for="classroom_id" class="block text-sm font-semibold text-gray-700 mb-2">
+                Kelas <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                </div>
+                <select 
+                    name="classroom_id" 
+                    id="classroom_id" 
+                    class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all duration-200 outline-none @error('classroom_id') border-red-500 @enderror appearance-none bg-white"
+                    required
+                >
+                    <option value="">-- Pilih Kelas --</option>
+                    @foreach($classrooms as $classroom)
+                        <option value="{{ $classroom->id }}" {{ old('classroom_id', $student->classroom_id) == $classroom->id ? 'selected' : '' }}>
+                            {{ $classroom->name }}
+                        </option>
+                    @endforeach
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </div>
+            </div>
+            @error('classroom_id')
+            <p class="mt-2 text-sm text-red-600 flex items-center">
+                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                {{ $message }}
+            </p>
+            @enderror
+        </div>
+
+        <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg">
+            <div class="flex items-start">
+                <svg class="w-5 h-5 text-yellow-500 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                <div>
+                    <p class="text-sm font-medium text-yellow-800">Perhatian</p>
+                    <p class="text-sm text-yellow-700 mt-1">Pastikan perubahan data sudah sesuai sebelum menyimpan.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="flex items-center justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
+        <a href="{{ route('students.index') }}" 
+           class="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
+            Batal
+        </a>
+        <button 
+            type="submit" 
+            class="px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
+            <span class="flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                Update Data
+            </span>
+        </button>
+    </div>
+
+</form>
     </div>
 </div>
 @endsection

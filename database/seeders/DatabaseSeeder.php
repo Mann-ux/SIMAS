@@ -49,6 +49,27 @@ class DatabaseSeeder extends Seeder
             'role' => 'sekretaris',
         ]);
 
+        // 4. Tambahan Guru Wali Kelas Baru untuk melengkapi 5 Kelas
+        $pakAnwar = User::updateOrCreate(
+            ['email' => 'anwar@smk.com'],
+            [
+                'name' => 'Pak Anwar Ibrahim',
+                'password' => Hash::make('password'),
+                'role' => 'wali_kelas',
+                'nip' => '19820101',
+            ]
+        );
+
+        $buRatna = User::updateOrCreate(
+            ['email' => 'ratna@smk.com'],
+            [
+                'name' => 'Bu Ratna Sari',
+                'password' => Hash::make('password'),
+                'role' => 'wali_kelas',
+                'nip' => '19840202',
+            ]
+        );
+
         // 3. Buat 2 Guru Tambahan (Wali Kelas) dengan updateOrCreate
         $pakWahid = User::updateOrCreate(
             ['email' => 'wahidx2@sma.com'],
@@ -130,5 +151,46 @@ class DatabaseSeeder extends Seeder
                 'classroom_id' => $classroomXI3->id,
             ]);
         }
+     // 8. Tambahan: Buat Kelas dan Siswa dengan Faker
+        $academicYear = \App\Models\AcademicYear::first() ?? \App\Models\AcademicYear::create(['name' => '2025/2026', 'is_active' => true]);
+        
+        // Ambil 2 User dengan role wali_kelas
+        $gurus = \App\Models\User::where('role', 'wali_kelas')->take(2)->get();
+        
+        // Buat 2 Classroom
+        $kelasX1 = \App\Models\Classroom::create([
+            'name' => 'X 1',
+            'tingkat' => 'X',
+            'academic_year_id' => $academicYear->id,
+            'user_id' => $gurus[0]->id,
+        ]);
+        
+        $kelasXI1 = \App\Models\Classroom::create([
+            'name' => 'XI 1',
+            'tingkat' => 'XI',
+            'academic_year_id' => $academicYear->id,
+            'user_id' => $gurus[1]->id,
+        ]);
+        
+        // Buat 10 Student menggunakan Faker
+        $faker = \Faker\Factory::create('id_ID');
+        
+        // 5 siswa pertama untuk kelas X 1
+        for ($i = 0; $i < 5; $i++) {
+            \App\Models\Student::create([
+                'nis' => $faker->unique()->numerify('#####'),
+                'name' => $faker->name(),
+                'classroom_id' => $kelasX1->id,
+            ]);
+        }
+        
+        // 5 siswa berikutnya untuk kelas XI 1
+        for ($i = 0; $i < 5; $i++) {
+            \App\Models\Student::create([
+                'nis' => $faker->unique()->numerify('#####'),
+                'name' => $faker->name(),
+                'classroom_id' => $kelasXI1->id,
+            ]);
+        }    
     }
 }

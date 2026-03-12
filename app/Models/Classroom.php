@@ -18,8 +18,11 @@ class Classroom extends Model
      */
     protected $fillable = [
         'name',
+        'tingkat',
         'user_id',
         'academic_year_id',
+        'ketua_nis',
+        'sekretaris_nis',
     ];
 
     /**
@@ -44,5 +47,21 @@ class Classroom extends Model
     public function students(): HasMany
     {
         return $this->hasMany(Student::class);
+    }
+
+    /**
+     * Get the ketua (class president) of the classroom.
+     */
+    public function ketua(): BelongsTo
+    {
+        return $this->belongsTo(Student::class, 'ketua_nis', 'nis');
+    }
+
+    /**
+     * Get the sekretaris (class secretary) of the classroom.
+     */
+    public function sekretaris(): BelongsTo
+    {
+        return $this->belongsTo(Student::class, 'sekretaris_nis', 'nis');
     }
 }

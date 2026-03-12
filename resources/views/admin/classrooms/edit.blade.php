@@ -43,6 +43,44 @@
 
             <div class="space-y-6">
                 
+                <!-- Tingkat Kelas -->
+                <div>
+                    <label for="tingkat" class="block text-sm font-semibold text-gray-700 mb-2">
+                        Tingkat Kelas <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                            </svg>
+                        </div>
+                        <select 
+                            name="tingkat" 
+                            id="tingkat" 
+                            class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all duration-200 outline-none @error('tingkat') border-red-500 @enderror appearance-none bg-white"
+                            required
+                        >
+                            <option value="" disabled>-- Pilih Tingkat --</option>
+                            <option value="X" {{ old('tingkat', $classroom->tingkat ?? '') == 'X' ? 'selected' : '' }}>X</option>
+                            <option value="XI" {{ old('tingkat', $classroom->tingkat ?? '') == 'XI' ? 'selected' : '' }}>XI</option>
+                            <option value="XII" {{ old('tingkat', $classroom->tingkat ?? '') == 'XII' ? 'selected' : '' }}>XII</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    @error('tingkat')
+                    <p class="mt-2 text-sm text-red-600 flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        {{ $message }}
+                    </p>
+                    @enderror
+                </div>
+
                 <!-- Nama Kelas -->
                 <div>
                     <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
@@ -76,7 +114,7 @@
 
                 <!-- Wali Kelas -->
                 <div>
-                    <label for="wali_kelas_id" class="block text-sm font-semibold text-gray-700 mb-2">
+                    <label for="user_id" class="block text-sm font-semibold text-gray-700 mb-2">
                         Wali Kelas <span class="text-red-500">*</span>
                     </label>
                     <div class="relative">
@@ -86,14 +124,14 @@
                             </svg>
                         </div>
                         <select 
-                            name="wali_kelas_id" 
-                            id="wali_kelas_id" 
-                            class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all duration-200 outline-none @error('wali_kelas_id') border-red-500 @enderror appearance-none bg-white"
+                            name="user_id" 
+                            id="user_id" 
+                            class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-yellow-500 focus:ring-2 focus:ring-yellow-200 transition-all duration-200 outline-none @error('user_id') border-red-500 @enderror appearance-none bg-white"
                             required
                         >
                             <option value="">-- Pilih Wali Kelas --</option>
-                            @foreach($waliKelas as $guru)
-                                <option value="{{ $guru->id }}" {{ old('wali_kelas_id', $classroom->wali_kelas_id) == $guru->id ? 'selected' : '' }}>
+                            @foreach($gurus as $guru)
+                                <option value="{{ $guru->id }}" {{ old('user_id', $classroom->user_id) == $guru->id ? 'selected' : '' }}>
                                     {{ $guru->name }} ({{ $guru->email }})
                                 </option>
                             @endforeach
@@ -104,7 +142,7 @@
                             </svg>
                         </div>
                     </div>
-                    @error('wali_kelas_id')
+                    @error('user_id')
                     <p class="mt-2 text-sm text-red-600 flex items-center">
                         <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>

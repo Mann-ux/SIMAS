@@ -1,8 +1,8 @@
 @extends('layouts.sekretaris')
 
-@section('title', 'Dashboard Sekretaris')
+@section('title', 'Dashboard Pengurus')
 
-@section('page-title', 'Dashboard Sekretaris')
+@section('page-title', 'Dashboard Pengurus')
 @section('page-description', 'Ringkasan kelas dan akses cepat input absensi harian')
 
 @section('content')
@@ -147,7 +147,7 @@
                 </h3>
                 <p class="text-sm text-gray-600 mt-1">Lanjutkan ke form input absensi harian untuk kelas Anda.</p>
             </div>
-            <a href="{{ route('sekretaris.absen.create') }}"
+            <a href="{{ route('pengurus.absen.create') }}"
                class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-lg shadow-lg hover:from-cyan-600 hover:to-blue-700 hover:shadow-xl transform hover:-translate-y-0.5 transition-all">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>

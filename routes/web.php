@@ -63,6 +63,8 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     
     // Resource Routes
     Route::resource('classrooms', \App\Http\Controllers\ClassroomController::class);
+    Route::delete('/classrooms/{classroom}/students/{student}', [\App\Http\Controllers\ClassroomController::class, 'removeStudent'])->name('classrooms.remove_student');
+    Route::post('/classrooms/{classroom}/students', [\App\Http\Controllers\ClassroomController::class, 'addStudents'])->name('classrooms.add_students');
     Route::resource('students', \App\Http\Controllers\StudentController::class);
     Route::resource('users', \App\Http\Controllers\UserController::class);
 });
@@ -104,47 +106,16 @@ Route::prefix('wali-kelas')->middleware(['auth', 'role:wali_kelas'])->group(func
     Route::get('/recap/export', [\App\Http\Controllers\AttendanceController::class, 'exportExcelWaliKelas'])->name('wali-kelas.recap.export');
 });
 
-// Route Group untuk Sekretaris
-Route::prefix('sekretaris')->middleware(['auth', 'role:sekretaris'])->group(function () {
-    Route::get('/dashboard', function () {
-        $user = request()->user();
-        $student = \App\Models\Student::where('nis', $user?->nis)->first();
-        $classroom = $student?->classroom;
-        $total_siswa = $classroom?->students()->count() ?? 0;
-
-        // Rekap absensi hari ini
-        $today = now()->toDateString();
-        $attendances = collect();
-        $recap_hari_ini = [
-            'Hadir' => 0,
-            'Izin' => 0,
-            'Sakit' => 0,
-            'Alpa' => 0,
-        ];
-
-        if ($classroom) {
-            $attendances = \App\Models\Attendance::whereIn('student_nis', $classroom->students->pluck('nis'))
-                ->where('date', $today)
-                ->get();
-            
-            $recap_hari_ini = [
-                'Hadir' => $attendances->where('status', 'Hadir')->count(),
-                'Izin' => $attendances->where('status', 'Izin')->count(),
-                'Sakit' => $attendances->where('status', 'Sakit')->count(),
-                'Alpa' => $attendances->where('status', 'Alpa')->count(),
-            ];
-        }
-
-        return view('sekretaris.dashboard', compact('classroom', 'total_siswa', 'recap_hari_ini', 'today'));
-    })->name('sekretaris.dashboard');
+// Route Group untuk Pengurus (Sekretaris & Ketua Kelas)
+Route::prefix('pengurus')->name('pengurus.')->middleware(['auth', 'role:sekretaris,ketua_kelas'])->group(function () {
+    Route::get('/absen', [\App\Http\Controllers\PengurusController::class, 'index'])->name('dashboard');
+    Route::get('/absen/tambah', [\App\Http\Controllers\PengurusController::class, 'create'])->name('absen.create');
+    Route::post('/absen/simpan', [\App\Http\Controllers\PengurusController::class, 'store'])->name('absen.store');
     
-    // Absensi Routes
-    Route::get('/absen', [\App\Http\Controllers\AttendanceController::class, 'sekretarisCreate'])->name('sekretaris.absen.create');
-    Route::post('/absen', [\App\Http\Controllers\AttendanceController::class, 'sekretarisStore'])->name('sekretaris.absen.store');
+    Route::get('/rekap', [\App\Http\Controllers\PengurusController::class, 'recap'])->name('recap');
     
-    // Rekap Bulanan Route
-    Route::get('/recap', [\App\Http\Controllers\AttendanceController::class, 'rekapBulananSekretaris'])->name('sekretaris.recap');
-    Route::get('/recap/export', [\App\Http\Controllers\AttendanceController::class, 'exportExcelSekretaris'])->name('sekretaris.recap.export');
+    // Ini jalan tol baru buat tombol Export lu
+    Route::get('/rekap/export', [\App\Http\Controllers\PengurusController::class, 'export'])->name('recap.export');
 });
 
 Route::get('/dashboard', function () {
