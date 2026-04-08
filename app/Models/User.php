@@ -57,4 +57,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Classroom::class);
     }
+
+    /**
+     * Get the classroom where this user is the homeroom teacher.
+     */
+    public function classroom()
+    {
+        return $this->hasOne(Classroom::class, 'wali_kelas_id', 'id');
+    }
 }

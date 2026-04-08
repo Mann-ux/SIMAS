@@ -6,178 +6,193 @@
 @section('page-description', 'Formulir untuk menambahkan siswa baru ke dalam sistem')
 
 @section('content')
-<div class="max-w-3xl mx-auto">
-    
-    <!-- Back Button -->
-    <div class="mb-6">
-        <a href="{{ route('students.index') }}" class="inline-flex items-center text-gray-600 hover:text-gray-800 font-medium transition-colors">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-            </svg>
-            Kembali ke Daftar Siswa
-        </a>
+<div class="max-w-4xl mx-auto space-y-8">
+
+    {{-- Page Header --}}
+    <div>
+        <p class="text-[10px] font-bold uppercase tracking-[0.25em] text-gray-400 mb-1">
+            Kelola Siswa &rsaquo; Tambah
+        </p>
+        <h1 class="text-4xl font-extrabold text-[#00236f] tracking-tight leading-tight">Data Peserta Didik</h1>
+        <p class="text-gray-500 mt-2 text-sm max-w-2xl">Daftarkan peserta didik baru SMA ke dalam sistem informasi akademik.</p>
     </div>
 
-    <!-- Form Card -->
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-        
-        <!-- Card Header -->
-        <div class="bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-6">
-            <div class="flex items-center">
-                <div class="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center mr-4">
-                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="text-2xl font-bold text-white">Tambah Siswa Baru</h2>
-                    <p class="text-purple-100 text-sm mt-1">Lengkapi formulir di bawah ini</p>
-                </div>
+    {{-- Form Card --}}
+    <div class="bg-white rounded-2xl shadow-[0_12px_40px_rgba(0,35,111,0.06)] overflow-hidden">
+
+        {{-- Card Header --}}
+        <div class="px-8 py-6 border-b border-gray-100 flex items-center gap-4">
+            <div class="w-12 h-12 bg-[#dce1ff] rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-[#00236f]" style="font-variation-settings:'FILL' 1;">person_add</span>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-[#00236f]">Formulir Data Siswa</h2>
+                <p class="text-sm text-gray-500 mt-0.5">Lengkapi NIS, nama lengkap, dan penempatan kelas siswa.</p>
             </div>
         </div>
 
-        <!-- Card Body -->
-        <form action="{{ route('students.store') }}" method="POST" class="px-8 py-8">
+        {{-- Form Content --}}
+        <form action="{{ route('students.store') }}" method="POST">
             @csrf
 
-            <div class="space-y-6">
-                
-                <!-- NISN -->
-                <div>
-                    <label for="nisn" class="block text-sm font-semibold text-gray-700 mb-2">
-                        NISN <span class="text-red-500">*</span>
+            <div class="px-8 py-8 space-y-6">
+
+                {{-- NIS --}}
+                <div class="space-y-2">
+                    <label for="nis" class="block text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">
+                        NIS (Nomor Induk Siswa) <span class="text-red-500">*</span>
                     </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
-                            </svg>
-                        </div>
-                        <input 
-                            type="text" 
-                            name="nisn" 
-                            id="nisn" 
-                            value="{{ old('nisn') }}"
-                            class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none @error('nisn') border-red-500 @enderror"
-                            placeholder="Contoh: 0012345678"
-                            required
-                        >
-                    </div>
-                    @error('nisn')
-                    <p class="mt-2 text-sm text-red-600 flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                        </svg>
-                        {{ $message }}
-                    </p>
+                    <input
+                        type="text"
+                        name="nis"
+                        id="nis"
+                        value="{{ old('nis') }}"
+                        placeholder="Contoh: 2024001"
+                        class="w-full h-14 bg-slate-50 border-0 rounded-xl px-4 text-sm font-mono font-medium text-gray-800 placeholder-gray-400 placeholder:font-sans focus:ring-2 focus:ring-[#00236f]/20 outline-none @error('nis') ring-2 ring-red-400 @enderror"
+                        required
+                    >
+                    @error('nis')
+                        <p class="text-xs text-red-500 ml-1">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Nama Siswa -->
-                <div>
-                    <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">
+                {{-- Nama Lengkap --}}
+                <div class="space-y-2">
+                    <label for="name" class="block text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">
                         Nama Lengkap <span class="text-red-500">*</span>
                     </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                            </svg>
-                        </div>
-                        <input 
-                            type="text" 
-                            name="name" 
-                            id="name" 
-                            value="{{ old('name') }}"
-                            class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none @error('name') border-red-500 @enderror"
-                            placeholder="Contoh: Ahmad Santoso"
-                            required
-                        >
-                    </div>
+                    <input
+                        type="text"
+                        name="name"
+                        id="name"
+                        value="{{ old('name') }}"
+                        placeholder="Contoh: Budi Pratama"
+                        class="w-full h-14 bg-slate-50 border-0 rounded-xl px-4 text-sm font-medium text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#00236f]/20 outline-none @error('name') ring-2 ring-red-400 @enderror"
+                        required
+                    >
                     @error('name')
-                    <p class="mt-2 text-sm text-red-600 flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                        </svg>
-                        {{ $message }}
-                    </p>
+                        <p class="text-xs text-red-500 ml-1">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Kelas -->
-                <div>
-                    <label for="classroom_id" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Kelas <span class="text-red-500">*</span>
+                {{-- Jenis Kelamin --}}
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">
+                        Jenis Kelamin <span class="text-red-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="flex items-center gap-3 h-14 px-5 bg-slate-50 rounded-xl cursor-pointer hover:bg-blue-50 has-[:checked]:bg-blue-50 has-[:checked]:ring-2 has-[:checked]:ring-[#00236f]/30 transition-all">
+                            <input
+                                type="radio"
+                                name="jenis_kelamin"
+                                value="L"
+                                class="w-4 h-4 text-[#00236f] border-gray-300 focus:ring-[#00236f]/30"
+                                {{ old('jenis_kelamin') == 'L' ? 'checked' : '' }}
+                                required
+                            >
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-6 bg-blue-500 rounded-full"></div>
+                                <span class="text-sm font-semibold text-gray-700">Laki-laki</span>
+                            </div>
+                        </label>
+                        <label class="flex items-center gap-3 h-14 px-5 bg-slate-50 rounded-xl cursor-pointer hover:bg-rose-50 has-[:checked]:bg-rose-50 has-[:checked]:ring-2 has-[:checked]:ring-rose-300 transition-all">
+                            <input
+                                type="radio"
+                                name="jenis_kelamin"
+                                value="P"
+                                class="w-4 h-4 text-rose-500 border-gray-300 focus:ring-rose-300"
+                                {{ old('jenis_kelamin') == 'P' ? 'checked' : '' }}
+                            >
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-6 bg-rose-500 rounded-full"></div>
+                                <span class="text-sm font-semibold text-gray-700">Perempuan</span>
+                            </div>
+                        </label>
+                    </div>
+                    @error('jenis_kelamin')
+                        <p class="text-xs text-red-500 ml-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                {{-- Kelas (Classroom) --}}
+                <div class="space-y-2">
+                    <label for="classroom_id" class="block text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">
+                        Penempatan Kelas
                     </label>
                     <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                        </div>
-                        <select 
-                            name="classroom_id" 
-                            id="classroom_id" 
-                            class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all duration-200 outline-none @error('classroom_id') border-red-500 @enderror appearance-none bg-white"
-                            required
+                        <select
+                            name="classroom_id"
+                            id="classroom_id"
+                            class="w-full h-14 bg-slate-50 border-0 rounded-xl px-4 pr-10 text-sm font-semibold text-gray-800 focus:ring-2 focus:ring-[#00236f]/20 outline-none appearance-none cursor-pointer @error('classroom_id') ring-2 ring-red-400 @enderror"
                         >
-                            <option value="">-- Pilih Kelas --</option>
+                            <option value="">-- Biarkan Kosong (Siswa Tanpa Kelas) --</option>
                             @foreach($classrooms as $classroom)
                                 <option value="{{ $classroom->id }}" {{ old('classroom_id') == $classroom->id ? 'selected' : '' }}>
                                     {{ $classroom->name }}
                                 </option>
                             @endforeach
                         </select>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                            <span class="material-symbols-outlined text-lg">expand_more</span>
                         </div>
                     </div>
                     @error('classroom_id')
-                    <p class="mt-2 text-sm text-red-600 flex items-center">
-                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                        </svg>
-                        {{ $message }}
-                    </p>
+                        <p class="text-xs text-red-500 ml-1">{{ $message }}</p>
                     @enderror
+                    <p class="text-[11px] text-gray-400 ml-1">Kelas dapat ditentukan kemudian melalui halaman detail kelas.</p>
                 </div>
 
-                <!-- Info Box -->
-                <div class="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-r-lg">
-                    <div class="flex items-start">
-                        <svg class="w-5 h-5 text-purple-500 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                        </svg>
-                        <div>
-                            <p class="text-sm font-medium text-purple-800">Informasi</p>
-                            <p class="text-sm text-purple-700 mt-1">Pastikan NISN yang dimasukkan benar dan belum terdaftar sebelumnya.</p>
-                        </div>
-                    </div>
-                </div>
+            </div>{{-- end form content --}}
 
-            </div>
-
-            <!-- Form Actions -->
-            <div class="flex items-center justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
-                <a href="{{ route('students.index') }}" 
-                   class="px-6 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors">
+            {{-- Form Footer --}}
+            <div class="px-8 py-5 bg-slate-50/60 border-t border-gray-100 flex items-center justify-end gap-4">
+                <a
+                    href="{{ route('students.index') }}"
+                    class="px-6 py-3 text-sm font-bold text-gray-500 hover:text-[#00236f] hover:bg-gray-100 rounded-xl transition-colors"
+                >
                     Batal
                 </a>
-                <button 
-                    type="submit" 
-                    class="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
-                    <span class="flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        Simpan Data
-                    </span>
+                <button
+                    type="submit"
+                    class="flex items-center gap-2 px-8 py-3 bg-[#00236f] hover:bg-[#001a55] text-white rounded-xl text-sm font-bold shadow-lg shadow-[#00236f]/20 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all"
+                >
+                    <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                    Simpan Data Siswa
                 </button>
             </div>
-
         </form>
     </div>
+
+    {{-- Guidance Cards --}}
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div class="p-5 bg-blue-50/60 rounded-xl border-l-4 border-[#00236f]">
+            <div class="flex items-center gap-2 mb-2 text-[#00236f]">
+                <span class="material-symbols-outlined text-[20px]">badge</span>
+                <span class="text-[10px] font-black uppercase tracking-wider">NIS</span>
+            </div>
+            <p class="text-sm text-[#264191] leading-relaxed">
+                Nomor Induk Siswa harus unik. Pastikan NIS belum terdaftar sebelumnya di sistem.
+            </p>
+        </div>
+        <div class="p-5 bg-green-50/60 rounded-xl border-l-4 border-[#006c49]">
+            <div class="flex items-center gap-2 mb-2 text-[#006c49]">
+                <span class="material-symbols-outlined text-[20px]">school</span>
+                <span class="text-[10px] font-black uppercase tracking-wider">Penempatan</span>
+            </div>
+            <p class="text-sm text-[#005236] leading-relaxed">
+                Siswa yang belum memiliki kelas dapat ditambahkan ke kelas melalui menu <span class="font-bold">Detail Kelas</span>.
+            </p>
+        </div>
+        <div class="p-5 bg-orange-50/60 rounded-xl border-l-4 border-orange-600">
+            <div class="flex items-center gap-2 mb-2 text-orange-700">
+                <span class="material-symbols-outlined text-[20px]">info</span>
+                <span class="text-[10px] font-black uppercase tracking-wider">Konteks SMA</span>
+            </div>
+            <p class="text-sm text-orange-700 leading-relaxed">
+                Data ini hanya berlaku untuk jenjang <span class="font-bold">SMA</span>. Pastikan siswa sudah terdaftar di jenjang yang benar.
+            </p>
+        </div>
+    </div>
+
 </div>
 @endsection

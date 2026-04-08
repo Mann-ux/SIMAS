@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('attendances', function (Blueprint $table) {
             $table->id();
-            $table->string('student_nis');
-            $table->foreign('student_nis')->references('nis')->on('students')->onDelete('cascade');
+            $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
             $table->foreignId('academic_year_id')->constrained('academic_years')->onDelete('cascade');
             $table->date('date');
             $table->enum('status', ['Hadir', 'Sakit', 'Izin', 'Alpa']);
-            $table->foreignId('recorded_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->unsignedBigInteger('recorded_by_id')->nullable();
+            $table->foreign('recorded_by_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

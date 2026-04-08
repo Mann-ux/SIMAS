@@ -12,27 +12,6 @@ class Student extends Model
     use HasFactory;
 
     /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'nis';
-
-    /**
-     * Indicates if the model's ID is auto-incrementing.
-     *
-     * @var bool
-     */
-    public $incrementing = false;
-
-    /**
-     * The data type of the primary key ID.
-     *
-     * @var string
-     */
-    protected $keyType = 'string';
-
-    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
@@ -40,8 +19,26 @@ class Student extends Model
     protected $fillable = [
         'nis',
         'name',
+        'nama_lengkap',
+        'jenis_kelamin',
         'classroom_id',
     ];
+
+    /**
+     * Alias agar input `nama_lengkap` tetap tersimpan ke kolom `name`.
+     */
+    public function setNamaLengkapAttribute(?string $value): void
+    {
+        $this->attributes['name'] = $value;
+    }
+
+    /**
+     * Alias baca `nama_lengkap` dari kolom `name`.
+     */
+    public function getNamaLengkapAttribute(): ?string
+    {
+        return $this->attributes['name'] ?? null;
+    }
 
     /**
      * Get the classroom that owns the student.
@@ -56,6 +53,6 @@ class Student extends Model
      */
     public function attendances(): HasMany
     {
-        return $this->hasMany(Attendance::class, 'student_nis', 'nis');
+        return $this->hasMany(Attendance::class, 'student_id');
     }
 }

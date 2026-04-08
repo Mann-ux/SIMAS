@@ -19,10 +19,10 @@ class Classroom extends Model
     protected $fillable = [
         'name',
         'tingkat',
-        'user_id',
+        'wali_kelas_id',
         'academic_year_id',
-        'ketua_nis',
-        'sekretaris_nis',
+        'ketua_id',
+        'sekretaris_id',
     ];
 
     /**
@@ -38,7 +38,15 @@ class Classroom extends Model
      */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'wali_kelas_id');
+    }
+
+    /**
+     * Get the wali kelas using the wali_kelas_id column.
+     */
+    public function waliKelas(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'wali_kelas_id');
     }
 
     /**
@@ -54,7 +62,7 @@ class Classroom extends Model
      */
     public function ketua(): BelongsTo
     {
-        return $this->belongsTo(Student::class, 'ketua_nis', 'nis');
+        return $this->belongsTo(User::class, 'ketua_id');
     }
 
     /**
@@ -62,6 +70,6 @@ class Classroom extends Model
      */
     public function sekretaris(): BelongsTo
     {
-        return $this->belongsTo(Student::class, 'sekretaris_nis', 'nis');
+        return $this->belongsTo(User::class, 'sekretaris_id');
     }
 }

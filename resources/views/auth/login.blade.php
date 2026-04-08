@@ -1,146 +1,242 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Login - Sistem Absensi Sekolah</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="min-h-screen bg-gradient-to-br from-blue-400 via-cyan-400 to-purple-400 flex items-center justify-center p-4">
-    
-    <!-- Login Card -->
-    <div class="w-full max-w-md">
-        <!-- Header Section -->
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full shadow-lg mb-4">
-                <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                </svg>
+@extends('layouts.landing')
+
+@section('meta-description', 'Login ke SIMAS – Sistem Manajemen Absensi Sekolah untuk administrator, guru, dan wali kelas.')
+
+@section('content')
+
+{{-- ─── Login Page ─────────────────────────────────────────────────────────── --}}
+<div class="min-h-screen bg-surface flex flex-col">
+
+
+    {{-- ── Main Content (centered) ─────────────────────────────────────────── --}}
+    <main class="flex-grow flex items-center justify-center px-6 py-12">
+        <div class="w-full max-w-sm md:max-w-md space-y-8">
+
+            {{-- ── Branding ───────────────────────────────────────────────── --}}
+            <div class="text-center space-y-3">
+                {{-- Branding icon: terang di semua ukuran layar (No-Line design system) --}}
+                <div class="inline-flex items-center justify-center w-16 h-16
+                            rounded-full
+                            bg-surface-container-low
+                            mb-2">
+                    <span class="material-symbols-outlined text-primary text-4xl">school</span>
+                </div>
+                <h1 class="text-3xl md:text-5xl font-extrabold md:font-black tracking-tight text-primary font-headline">
+                    SIMAS
+                </h1>
+                <p class="text-sm font-medium text-on-surface-variant tracking-wide px-4 leading-relaxed">
+                    Sistem Manajemen Absensi Sekolah
+                </p>
             </div>
-            <h1 class="text-3xl font-bold text-white mb-2">Selamat Datang!</h1>
-            <p class="text-white/90 text-sm">Sistem Informasi Absensi Sekolah</p>
-        </div>
 
-        <!-- Card Form -->
-        <div class="bg-white rounded-2xl shadow-2xl p-8 backdrop-blur-sm">
-            <!-- Session Status -->
-            @if (session('status'))
-                <div class="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm">
-                    {{ session('status') }}
-                </div>
-            @endif
+            {{-- ── Login Card ─────────────────────────────────────────────── --}}
+            <div class="bg-surface-container-lowest p-8 rounded-xl
+                        shadow-[0_12px_40px_rgba(0,35,111,0.08)]
+                        space-y-6">
 
-            <form method="POST" action="{{ route('login') }}">
-                @csrf
-
-                <!-- Email / NIS -->
-                <div class="mb-6">
-                    <label for="login" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Email / NIS
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path>
-                            </svg>
-                        </div>
-                        <input 
-                            id="login" 
-                            type="text" 
-                            name="login" 
-                            value="{{ old('login') }}" 
-                            required 
-                            autofocus 
-                            autocomplete="username"
-                            class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 outline-none"
-                            placeholder="Email atau NIS Anda"
-                        >
+                {{-- Session Status --}}
+                @if (session('status'))
+                    <div class="p-3 bg-surface-container-low rounded-xl text-sm text-on-surface-variant">
+                        {{ session('status') }}
                     </div>
-                </div>
+                @endif
 
-                <!-- Password -->
-                <div class="mb-6">
-                    <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
-                        Password
-                    </label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                            </svg>
+                <form method="POST" action="{{ route('login') }}" class="space-y-5">
+                    @csrf
+
+                    {{-- ── EMAIL / NIS ─────────────────────────────────────── --}}
+                    <div class="space-y-1.5">
+                        <label for="login"
+                               class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase ml-1">
+                            EMAIL
+                        </label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <span class="material-symbols-outlined text-outline text-lg">alternate_email</span>
+                            </div>
+                            <input
+                                id="login"
+                                type="text"
+                                name="login"
+                                value="{{ old('login') }}"
+                                required
+                                autofocus
+                                autocomplete="username"
+                                placeholder="name@school.edu"
+                                class="block w-full pl-11 pr-4 py-3.5
+                                       bg-surface-container-low
+                                       rounded-xl
+                                       focus:outline-none focus:ring-2 focus:ring-primary/20
+                                       text-on-surface placeholder-outline/50
+                                       text-sm font-body
+                                       transition-all duration-300
+                                       @error('login') ring-2 ring-error/40 @enderror"
+                            >
                         </div>
-                        <input 
-                            id="password" 
-                            type="password" 
-                            name="password" 
-                            required 
-                            autocomplete="current-password"
-                            class="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 outline-none"
-                            placeholder="Masukkan password"
-                        >
+                        @error('login')
+                            <p class="text-[11px] text-red-500 text-sm ml-1 mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
-                </div>
 
-                <!-- Remember Me -->
-                <div class="flex items-center justify-between mb-6">
-                    <label for="remember_me" class="flex items-center cursor-pointer group">
-                        <input 
-                            id="remember_me" 
-                            type="checkbox" 
-                            name="remember"
-                            class="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-2 focus:ring-blue-400 cursor-pointer"
-                        >
-                        <span class="ml-2 text-sm text-gray-600 group-hover:text-gray-800">Ingat Saya</span>
-                    </label>
+                    {{-- ── PASSWORD ────────────────────────────────────────── --}}
+                    <div class="space-y-1.5">
+                        <label for="password"
+                               class="block text-[10px] font-bold tracking-widest text-on-surface-variant uppercase ml-1">
+                            PASSWORD
+                        </label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <span class="material-symbols-outlined text-outline text-lg">lock</span>
+                            </div>
+                            <input
+                                id="password"
+                                type="password"
+                                name="password"
+                                required
+                                autocomplete="current-password"
+                                placeholder="••••••••"
+                                class="block w-full pl-11 pr-12 py-3.5
+                                       bg-surface-container-low
+                                       rounded-xl
+                                       focus:outline-none focus:ring-2 focus:ring-primary/20
+                                       text-on-surface placeholder-outline/50
+                                       text-sm font-body
+                                       transition-all duration-300
+                                       @error('password') ring-2 ring-error/40 @enderror"
+                            >
+                            {{-- Toggle Visibility --}}
+                            <button type="button" id="toggle-password"
+                                    class="absolute inset-y-0 right-0 pr-4 flex items-center"
+                                    aria-label="Toggle password visibility">
+                                <span id="eye-icon"
+                                      class="material-symbols-outlined text-outline hover:text-primary transition-colors text-lg">
+                                    visibility
+                                </span>
+                            </button>
+                        </div>
+                        @error('password')
+                            <p class="text-[11px] text-red-500 text-sm ml-1 mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
 
-                    @if (Route::has('password.request'))
-                        <a href="{{ route('password.request') }}" class="text-sm text-blue-500 hover:text-blue-700 font-medium transition-colors">
-                            Lupa Password?
+                    {{-- ── Remember this device ────────────────────────────── --}}
+                    <div class="flex items-center py-1">
+                        <label class="flex items-center gap-3 cursor-pointer group">
+                            <input
+                                id="remember_me"
+                                type="checkbox"
+                                name="remember"
+                                class="h-5 w-5 rounded
+                                       bg-surface-container-low text-primary
+                                       focus:ring-primary/20
+                                       transition-all"
+                            >
+                            <span class="text-xs font-medium text-on-surface-variant group-hover:text-primary transition-colors">
+                                Remember this device
+                            </span>
+                        </label>
+                    </div>
+
+                    {{-- ── Submit ───────────────────────────────────────────── --}}
+                    <button
+                        type="submit"
+                        class="w-full py-4 px-6 rounded-xl
+                               font-label font-bold text-sm tracking-wide
+                               text-white
+                               flex items-center justify-center gap-2
+                               shadow-[0_4px_14px_rgba(0,35,111,0.25)]
+                               active:scale-[0.98]
+                               hover:brightness-110
+                               transition-all duration-300 group"
+                        style="background: linear-gradient(135deg, #00236f 0%, #1e3a8a 100%);"
+                    >
+                        LOGIN TO DASHBOARD
+                        <span class="material-symbols-outlined text-lg transition-transform group-hover:translate-x-1">
+                            arrow_forward
+                        </span>
+                    </button>
+
+                </form>
+
+                {{-- ── Footer Link ──────────────────────────────────────────── --}}
+                <div class="pt-2 text-center">
+                    <p class="text-on-surface-variant font-body text-xs font-normal">
+                        New student or faculty?
+                        <a href="mailto:admin@school.edu"
+                           class="text-primary font-semibold hover:underline underline-offset-4 transition-colors">
+                            Contact Administration
                         </a>
-                    @endif
+                    </p>
                 </div>
 
-                <!-- Submit Button -->
-                <button 
-                    type="submit" 
-                    class="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-blue-300"
-                >
-                    <span class="flex items-center justify-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
-                        </svg>
-                        Masuk
-                    </span>
-                </button>
-            </form>
+            </div>{{-- /card --}}
+
+            {{-- ── Ornamental divider ──────────────────────────────────────── --}}
+            <div class="flex justify-center opacity-10">
+                <div class="w-24 h-1 bg-primary rounded-full"></div>
+            </div>
+
         </div>
+    </main>
 
-        <!-- Footer -->
-        <div class="text-center mt-6">
-            <p class="text-white/80 text-sm">© 2026 Sistem Absensi Sekolah. All rights reserved.</p>
+    {{-- ── Global Footer ───────────────────────────────────────────────────── --}}
+    <footer class="w-full flex flex-col items-center gap-2 px-8 mt-auto py-6">
+        <div class="flex flex-col items-center gap-1">
+            <p class="font-body text-[10px] uppercase tracking-widest text-slate-400 font-medium">
+                SYSTEM ONLINE &bull; VERSION 4.2.0 &bull; PRIVACY
+            </p>
+            <div class="flex gap-4 mt-2">
+                <a href="#"
+                   class="font-body text-[10px] uppercase tracking-widest text-slate-400 hover:text-primary transition-colors">
+                    Privacy Policy
+                </a>
+                <span class="text-slate-300 text-[10px]">&bull;</span>
+                <a href="#"
+                   class="font-body text-[10px] uppercase tracking-widest text-slate-400 hover:text-primary transition-colors">
+                    Help Center
+                </a>
+            </div>
         </div>
-    </div>
+    </footer>
 
-    <!-- SweetAlert2 CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</div>
 
-    <!-- Error Handling Script -->
-    @if ($errors->any())
-    <script>
+@endsection
+
+@push('scripts')
+<script>
+    // ── Password visibility toggle ───────────────────────────────────────────
+    const toggleBtn  = document.getElementById('toggle-password');
+    const pwdInput   = document.getElementById('password');
+    const eyeIcon    = document.getElementById('eye-icon');
+
+    if (toggleBtn && pwdInput && eyeIcon) {
+        toggleBtn.addEventListener('click', () => {
+            const isHidden = pwdInput.type === 'password';
+            pwdInput.type  = isHidden ? 'text' : 'password';
+            eyeIcon.textContent = isHidden ? 'visibility_off' : 'visibility';
+        });
+    }
+
+    // ── SweetAlert2 – validation errors ─────────────────────────────────────
+    @if ($errors->has('login') || $errors->has('password'))
+    if (typeof Swal !== 'undefined') {
         Swal.fire({
             icon: 'error',
             title: 'Login Gagal',
-            text: 'Silakan cek email dan password Anda!',
-            confirmButtonText: 'OK',
-            confirmButtonColor: '#3B82F6',
+            text: '{{ $errors->first("login") ?: $errors->first("password") }}',
+            confirmButtonText: 'Coba Lagi',
+            confirmButtonColor: '#00236f',
+            buttonsStyling: false,
             customClass: {
-                popup: 'rounded-2xl',
-                confirmButton: 'rounded-lg px-6 py-2'
+                popup: 'bg-white rounded-2xl shadow-2xl border border-gray-100',
+                title: 'text-2xl font-bold text-gray-800',
+                htmlContainer: 'text-base text-gray-500 mt-2',
+                confirmButton: 'mt-4 bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95',
+                cancelButton: 'mt-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95 ml-2'
             }
         });
-    </script>
+    }
     @endif
-    
-</body>
-</html>
+</script>
+@endpush

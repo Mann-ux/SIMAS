@@ -16,11 +16,12 @@ class Attendance extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'student_nis',
+        'student_id',
         'academic_year_id',
         'date',
         'status',
-        'recorded_by',
+        'recorded_by_id',
+        'keterangan',
     ];
 
     /**
@@ -48,7 +49,7 @@ class Attendance extends Model
      */
     public function student(): BelongsTo
     {
-        return $this->belongsTo(Student::class, 'student_nis', 'nis');
+        return $this->belongsTo(Student::class, 'student_id');
     }
 
     /**
@@ -56,6 +57,6 @@ class Attendance extends Model
      */
     public function recorder(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'recorded_by');
+        return $this->belongsTo(User::class, 'recorded_by_id');
     }
 }

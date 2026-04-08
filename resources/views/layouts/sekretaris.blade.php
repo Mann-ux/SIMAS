@@ -4,153 +4,267 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Dashboard Pengurus') - SIMAS</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>@yield('title', 'Dashboard Pengurus') — SIMAS</title>
+    <meta name="description" content="Panel pengurus kelas SIMAS untuk input absensi harian dan rekap kehadiran.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .font-manrope { font-family: 'Manrope', sans-serif; }
+        /* Mobile menu transition */
+        #mobile-menu-sk {
+            transition: max-height 0.25s ease, opacity 0.25s ease;
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+        }
+        #mobile-menu-sk.open {
+            max-height: 300px;
+            opacity: 1;
+        }
+        /* Active nav underline */
+        .nav-link-active {
+            color: #00236f;
+            font-weight: 700;
+            border-bottom: 2px solid #00236f;
+            padding-bottom: 2px;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="flex h-screen overflow-hidden">
-        
-        <!-- Sidebar -->
-        <aside class="w-64 bg-gradient-to-b from-cyan-800 to-blue-900 text-white flex-shrink-0 hidden md:flex md:flex-col">
-            <!-- Logo/Header -->
-            <div class="p-6 border-b border-cyan-700">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-cyan-500 rounded-lg flex items-center justify-center">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h1 class="font-bold text-lg">SIMAS</h1>
-                        <p class="text-xs text-cyan-300">Pengurus</p>
-                    </div>
+
+<body class="bg-slate-100 antialiased">
+
+{{-- ══════════════════════════════════════════════
+     TOP NAVBAR — PENGURUS KELAS
+     ══════════════════════════════════════════════ --}}
+<nav class="w-full bg-white/80 backdrop-blur-xl shadow-sm border-b border-gray-100 sticky top-0 z-50" role="navigation" aria-label="Top navigation pengurus kelas">
+    <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10">
+        <div class="flex items-center justify-between h-16">
+
+            {{-- ── Kiri: Logo + Menu Desktop ──────────────── --}}
+            <div class="flex items-center gap-8">
+                {{-- Logo --}}
+                <a href="{{ route('pengurus.dashboard') }}" class="flex items-center gap-2 font-manrope text-2xl font-extrabold tracking-tighter text-[#00236f]" aria-label="SIMAS Home">
+                    <svg class="w-8 h-8 text-[#00236f]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path>
+                    </svg>
+                    SIMAS
+                </a>
+
+                {{-- Menu Desktop --}}
+                <div class="hidden md:flex items-center gap-6" role="menubar">
+                    <a href="{{ route('pengurus.dashboard') }}"
+                       id="nav-sk-dashboard"
+                       class="text-sm font-medium transition-colors duration-200 pb-0.5 {{ request()->routeIs('pengurus.dashboard') ? 'nav-link-active' : 'text-slate-500 hover:text-[#00236f]' }}"
+                       role="menuitem"
+                       aria-current="{{ request()->routeIs('pengurus.dashboard') ? 'page' : 'false' }}">
+                        Dashboard
+                    </a>
+                    <a href="{{ route('pengurus.absen.create') }}"
+                       id="nav-sk-absen"
+                       class="text-sm font-medium transition-colors duration-200 pb-0.5 {{ request()->routeIs('pengurus.absen.*') ? 'nav-link-active' : 'text-slate-500 hover:text-[#00236f]' }}"
+                       role="menuitem"
+                       aria-current="{{ request()->routeIs('pengurus.absen.*') ? 'page' : 'false' }}">
+                        Absensi
+                    </a>
+                    <a href="{{ route('pengurus.recap') }}"
+                       id="nav-sk-recap"
+                       class="text-sm font-medium transition-colors duration-200 pb-0.5 {{ request()->routeIs('pengurus.recap') ? 'nav-link-active' : 'text-slate-500 hover:text-[#00236f]' }}"
+                       role="menuitem"
+                       aria-current="{{ request()->routeIs('pengurus.recap') ? 'page' : 'false' }}">
+                        Rekap
+                    </a>
                 </div>
             </div>
 
-            <!-- User Info -->
-            <div class="px-6 py-4 bg-cyan-800/50">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-cyan-600 rounded-full flex items-center justify-center">
-                        <span class="text-sm font-semibold">{{ substr(auth()->user()->name, 0, 2) }}</span>
+            {{-- ── Kanan: User Info + Logout Desktop ──────── --}}
+            <div class="flex items-center gap-3 md:gap-4">
+                {{-- User info --}}
+                <div class="flex items-center gap-2">
+                    <div class="flex flex-col items-end">
+                        <span class="font-semibold text-gray-800 text-sm leading-tight">
+                            {{ auth()->user()->name }}
+                        </span>
+                        <span class="text-xs text-gray-500">
+                            PENGURUS KELAS
+                        </span>
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium truncate">{{ auth()->user()->name }}</p>
-                        <p class="text-xs text-cyan-300">Pengurus Kelas</p>
-                    </div>
+                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </div>
-            </div>
 
-            <!-- Navigation Menu -->
-            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-                <!-- Dashboard Pengurus -->
-                <a href="{{ route('pengurus.dashboard') }}"
-                   class="flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('pengurus.dashboard') ? 'bg-cyan-600 text-white' : 'text-cyan-200 hover:bg-cyan-700 hover:text-white' }}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
-                    </svg>
-                    <span class="font-medium">Dashboard</span>
-                </a>
+                {{-- Separator --}}
+                <div class="hidden md:block w-px h-8 bg-slate-200"></div>
 
-                <!-- Input Absensi Harian -->
-                <a href="{{ route('pengurus.absen.create') }}"
-                   class="flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('pengurus.absen.*') ? 'bg-cyan-600 text-white' : 'text-cyan-200 hover:bg-cyan-700 hover:text-white' }}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
-                    </svg>
-                    <span class="font-medium">Input Absensi Harian</span>
-                </a>
-
-                <!-- Rekap Bulanan -->
-                <a href="{{ route('pengurus.recap') }}"
-                   class="flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors {{ request()->routeIs('pengurus.recap') ? 'bg-cyan-600 text-white' : 'text-cyan-200 hover:bg-cyan-700 hover:text-white' }}">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
-                    <span class="font-medium">Rekap Bulanan</span>
-                </a>
-            </nav>
-
-            <!-- Logout Button -->
-            <div class="p-4 border-t border-cyan-700">
-                <form method="POST" action="{{ route('logout') }}">
+                {{-- Logout --}}
+                <form method="POST" action="{{ route('logout') }}" class="hidden md:inline">
                     @csrf
-                    <button type="submit" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-cyan-200 hover:bg-red-600 hover:text-white transition-colors w-full">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                    <button id="btn-sk-logout" type="submit"
+                        class="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-red-600 transition-colors duration-200"
+                        title="Keluar">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                         </svg>
-                        <span class="font-medium">Logout</span>
+                        Keluar
                     </button>
                 </form>
             </div>
-        </aside>
 
-        <!-- Main Content Area -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <!-- Top Navigation Bar -->
-            <header class="bg-white shadow-sm z-10">
-                <div class="flex items-center justify-between px-6 py-4">
-                    <div>
-                        <h2 class="text-2xl font-bold text-gray-800">@yield('page-title', 'Dashboard Pengurus')</h2>
-                        <p class="text-sm text-gray-600">@yield('page-description', 'Selamat datang di panel pengurus SIMAS')</p>
-                    </div>
+            {{-- ── Hamburger Mobile ────────────────────────── --}}
+            <button id="btn-sk-mobile-toggle" type="button"
+                class="hidden p-2 rounded-lg text-slate-500 hover:text-[#00236f] hover:bg-slate-100 transition-colors"
+                aria-label="Buka/tutup menu" aria-expanded="false" aria-controls="mobile-menu-sk">
+                <svg id="icon-sk-hamburger" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+                <svg id="icon-sk-close" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
 
-                    <div class="flex items-center space-x-4">
-                        <button class="relative p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                            </svg>
-                        </button>
-
-                        <div class="hidden lg:block text-sm text-gray-600">
-                            <div class="font-medium">{{ date('d F Y') }}</div>
-                            <div class="text-xs">{{ date('H:i') }} WIB</div>
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            <!-- Content Area -->
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-                <div class="container mx-auto px-6 py-8">
-                    @if(session('success'))
-                    <div class="mb-6 bg-green-50 border-l-4 border-green-500 text-green-700 p-4 rounded-lg shadow-sm" role="alert">
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            <span class="font-medium">{{ session('success') }}</span>
-                        </div>
-                    </div>
-                    @endif
-
-                    @if(session('error'))
-                    <div class="mb-6 bg-red-50 border-l-4 border-red-500 text-red-700 p-4 rounded-lg shadow-sm" role="alert">
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                            </svg>
-                            <span class="font-medium">{{ session('error') }}</span>
-                        </div>
-                    </div>
-                    @endif
-
-                    @yield('content')
-                </div>
-            </main>
-
-            <!-- Footer -->
-            <footer class="bg-white border-t border-gray-200 py-4">
-                <div class="container mx-auto px-6">
-                    <div class="flex items-center justify-between text-sm text-gray-600">
-                        <p>&copy; 2026 SIMAS - Sistem Informasi Absensi Sekolah. All rights reserved.</p>
-                        <p>Version 1.0.0</p>
-                    </div>
-                </div>
-            </footer>
         </div>
-    </div>
 
-    @stack('scripts')
+        {{-- ── Mobile Menu ─────────────────────────────── --}}
+        <div id="mobile-menu-sk" role="menu" aria-label="Menu mobile pengurus kelas" class="hidden">
+            <div class="py-3 space-y-1 border-t border-slate-100">
+                {{-- User info mobile --}}
+                <div class="px-3 py-2 mb-2">
+                    <p class="text-sm font-bold text-[#00236f] font-manrope">{{ auth()->user()->name }}</p>
+                    <p class="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">PENGURUS KELAS</p>
+                </div>
+
+                <a href="{{ route('pengurus.dashboard') }}"
+                   class="block px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('pengurus.dashboard') ? 'bg-[#00236f]/10 text-[#00236f] font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-[#00236f]' }} transition-colors"
+                   role="menuitem">
+                    Dashboard
+                </a>
+                <a href="{{ route('pengurus.absen.create') }}"
+                   class="block px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('pengurus.absen.*') ? 'bg-[#00236f]/10 text-[#00236f] font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-[#00236f]' }} transition-colors"
+                   role="menuitem">
+                    Absensi
+                </a>
+                <a href="{{ route('pengurus.recap') }}"
+                   class="block px-3 py-2 rounded-lg text-sm font-medium {{ request()->routeIs('pengurus.recap') ? 'bg-[#00236f]/10 text-[#00236f] font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-[#00236f]' }} transition-colors"
+                   role="menuitem">
+                    Rekap
+                </a>
+
+                {{-- Logout mobile --}}
+                <div class="pt-2 border-t border-slate-100">
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                            class="w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors"
+                            role="menuitem">
+                            Keluar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</nav>
+
+{{-- ══════════════════════════════════════════════
+     MAIN CONTENT AREA
+     ══════════════════════════════════════════════ --}}
+<div class="min-h-screen bg-slate-100 flex flex-col">
+    <main class="flex-1 w-full pb-24 md:pb-6" role="main" id="main-content-sk">
+        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 py-6 lg:py-8">
+
+            {{-- Flash Messages --}}
+            @if(session('success'))
+            <div class="mb-6 flex items-start gap-3 px-5 py-4 rounded-xl bg-emerald-50 border border-emerald-100" role="alert" aria-live="polite">
+                <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-emerald-600" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <p class="text-sm font-medium text-emerald-800">{{ session('success') }}</p>
+            </div>
+            @endif
+
+            @if(session('error'))
+            <div class="mb-6 flex items-start gap-3 px-5 py-4 rounded-xl bg-red-50 border border-red-100" role="alert" aria-live="assertive">
+                <svg class="w-5 h-5 mt-0.5 flex-shrink-0 text-red-600" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                </svg>
+                <p class="text-sm font-medium text-red-800">{{ session('error') }}</p>
+            </div>
+            @endif
+
+            @yield('content')
+
+        </div>
+    </main>
+
+    {{-- Footer --}}
+    <footer class="bg-white/60 border-t border-slate-200/50" role="contentinfo">
+        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 py-4 flex items-center justify-between gap-4">
+            <p class="text-xs text-slate-400">&copy; {{ date('Y') }} SIMAS — Sistem Informasi Manajemen Absensi Sekolah</p>
+            <p class="text-xs text-slate-400">v1.0.0</p>
+        </div>
+    </footer>
+</div>
+
+{{-- Mobile menu toggle script --}}
+<script>
+(function () {
+    const btn     = document.getElementById('btn-sk-mobile-toggle');
+    const menu    = document.getElementById('mobile-menu-sk');
+    const iconHam = document.getElementById('icon-sk-hamburger');
+    const iconX   = document.getElementById('icon-sk-close');
+
+    if (!btn || !menu) return;
+
+    btn.addEventListener('click', function () {
+        const isOpen = menu.classList.toggle('open');
+        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        iconHam.classList.toggle('hidden', isOpen);
+        iconX.classList.toggle('hidden', !isOpen);
+    });
+
+    // Tutup saat klik di luar
+    document.addEventListener('click', function (e) {
+        if (!btn.contains(e.target) && !menu.contains(e.target)) {
+            menu.classList.remove('open');
+            btn.setAttribute('aria-expanded', 'false');
+            iconHam.classList.remove('hidden');
+            iconX.classList.add('hidden');
+        }
+    });
+})();
+</script>
+
+{{-- ── Bottom Navigation Mobile ────────────────── --}}
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 pb-6 pt-3 bg-white/90 backdrop-blur-2xl z-50 rounded-t-3xl border-t border-slate-200/20 shadow-[0_-12px_40px_rgba(0,35,111,0.08)]">
+    <!-- Dashboard -->
+    <a class="flex flex-col items-center justify-center {{ request()->routeIs('pengurus.dashboard') ? 'bg-gradient-to-br from-[#00236f] to-[#1e3a8a] text-white rounded-xl' : 'text-slate-400 hover:text-[#00236f]' }} py-2 px-4 transition-transform active:scale-95" href="{{ route('pengurus.dashboard') }}">
+        <svg class="w-6 h-6 mb-1" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
+        </svg>
+        <span class="uppercase tracking-wider text-[10px] font-semibold">Dashboard</span>
+    </a>
+    <!-- Absensi -->
+    <a class="flex flex-col items-center justify-center {{ request()->routeIs('pengurus.absen.*') ? 'bg-gradient-to-br from-[#00236f] to-[#1e3a8a] text-white rounded-xl' : 'text-slate-400 hover:text-[#00236f]' }} py-2 px-4 transition-all active:scale-95" href="{{ route('pengurus.absen.create') }}">
+        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+        </svg>
+        <span class="uppercase tracking-wider text-[10px] font-semibold">Absensi</span>
+    </a>
+    <!-- Rekap -->
+    <a class="flex flex-col items-center justify-center {{ request()->routeIs('pengurus.recap') ? 'bg-gradient-to-br from-[#00236f] to-[#1e3a8a] text-white rounded-xl' : 'text-slate-400 hover:text-[#00236f]' }} py-2 px-4 transition-all active:scale-95" href="{{ route('pengurus.recap') }}">
+        <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+        </svg>
+        <span class="uppercase tracking-wider text-[10px] font-semibold">Rekap</span>
+    </a>
+</nav>
+
+@stack('scripts')
 </body>
 </html>

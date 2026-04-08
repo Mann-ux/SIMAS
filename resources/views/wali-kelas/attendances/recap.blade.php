@@ -6,230 +6,167 @@
 @section('page-description', 'Laporan kehadiran siswa per bulan')
 
 @section('content')
-<div class="max-w-7xl mx-auto">
+<div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 md:pt-12 md:pb-20">
 
-    <!-- Filter Card -->
-    <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-        <div class="flex items-center justify-between flex-wrap gap-4">
-            <!-- Form Filter -->
-            <form method="GET" action="{{ route('wali-kelas.recap') }}" class="flex items-end gap-4 flex-wrap flex-1">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Bulan</label>
-                    <select name="month" class="px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                        <option value="01" {{ $month == '01' ? 'selected' : '' }}>Januari</option>
-                        <option value="02" {{ $month == '02' ? 'selected' : '' }}>Februari</option>
-                        <option value="03" {{ $month == '03' ? 'selected' : '' }}>Maret</option>
-                        <option value="04" {{ $month == '04' ? 'selected' : '' }}>April</option>
-                        <option value="05" {{ $month == '05' ? 'selected' : '' }}>Mei</option>
-                        <option value="06" {{ $month == '06' ? 'selected' : '' }}>Juni</option>
-                        <option value="07" {{ $month == '07' ? 'selected' : '' }}>Juli</option>
-                        <option value="08" {{ $month == '08' ? 'selected' : '' }}>Agustus</option>
-                        <option value="09" {{ $month == '09' ? 'selected' : '' }}>September</option>
-                        <option value="10" {{ $month == '10' ? 'selected' : '' }}>Oktober</option>
-                        <option value="11" {{ $month == '11' ? 'selected' : '' }}>November</option>
-                        <option value="12" {{ $month == '12' ? 'selected' : '' }}>Desember</option>
-                    </select>
-                </div>
+    @php
+        $monthNames = [
+            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret',    '04' => 'April',
+            '05' => 'Mei',     '06' => 'Juni',      '07' => 'Juli',     '08' => 'Agustus',
+            '09' => 'September','10' => 'Oktober',  '11' => 'November', '12' => 'Desember'
+        ];
 
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tahun</label>
-                    <select name="year" class="px-4 py-2 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors">
-                        @for($y = date('Y'); $y >= date('Y') - 5; $y--)
+        // Stats Calculation
+        $totalSakitIzin = $students->sum(fn($s) => $s->attendances->whereIn('status', ['Sakit', 'Izin'])->count());
+        $allAttendancesCount = $students->sum(fn($s) => $s->attendances->count());
+        $totalHadirOverall = $students->sum(fn($s) => $s->attendances->where('status', 'Hadir')->count());
+        $attendancePercentage = $allAttendancesCount > 0 ? round(($totalHadirOverall / $allAttendancesCount) * 100, 1) : 0;
+        
+        $statusKelas = 'Baik';
+        $statusColor = 'bg-[#4edea3]';
+        if ($attendancePercentage >= 90) { $statusKelas = 'Sangat Baik'; }
+        elseif ($attendancePercentage >= 75) { $statusKelas = 'Cukup'; $statusColor = 'bg-amber-400'; }
+        else { $statusKelas = 'Perlu Perhatian'; $statusColor = 'bg-rose-500'; }
+    @endphp
+
+    <header class="mb-12 flex flex-col xl:flex-row xl:items-start justify-between gap-8">
+        <div class="max-w-2xl">
+            <div class="flex items-center gap-2 mb-4 print:hidden">
+                <span class="w-8 h-[2px] bg-[#00236f]"></span>
+                <span class="text-[#444651] font-label text-xs uppercase tracking-[0.2em]">Laporan Akademik</span>
+            </div>
+            <h1 class="text-3xl md:text-5xl font-extrabold font-headline text-[#00236f] tracking-tight leading-none mb-4 print:hidden">Rekapitulasi Absensi</h1>
+            <p class="text-[#444651] text-base md:text-lg max-w-lg font-body leading-relaxed print:hidden">
+                Ringkasan kehadiran siswa bulanan untuk memantau kedisiplinan dan partisipasi akademik di Kelas {{ $classroom->name }} SMA 1.
+            </p>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-end gap-3 lg:gap-4 mt-4 lg:mt-0 print:hidden">
+            <form method="GET" action="{{ route('wali-kelas.recap') }}" class="flex items-center gap-3">
+                <div class="flex items-center gap-2">
+                    <div class="relative">
+                        <select name="month" onchange="this.form.submit()" class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 pr-10 text-sm font-medium text-gray-700 flex items-center gap-2 w-full focus:ring-2 focus:ring-[#00236f]/20 transition-all cursor-pointer">
+                            @foreach($monthNames as $m => $name)
+                            <option value="{{ $m }}" {{ $month == $m ? 'selected' : '' }}>{{ $name }}</option>
+                            @endforeach
+                        </select>
+                        <svg class="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                    <div class="relative">
+                        <select name="year" onchange="this.form.submit()" class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2.5 pr-10 text-sm font-medium text-gray-700 flex items-center gap-2 w-full focus:ring-2 focus:ring-[#00236f]/20 transition-all cursor-pointer">
+                            @for($y = date('Y'); $y >= date('Y') - 5; $y--)
                             <option value="{{ $y }}" {{ $year == $y ? 'selected' : '' }}>{{ $y }}</option>
-                        @endfor
-                    </select>
+                            @endfor
+                        </select>
+                        <svg class="w-5 h-5 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                    </div>
                 </div>
-
-                <button type="submit" class="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
-                    <span class="flex items-center">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                        Tampilkan
-                    </span>
-                </button>
             </form>
 
-            <!-- Tombol Export Excel -->
-            <a href="{{ route('wali-kelas.recap.export', ['month' => $month, 'year' => $year]) }}" class="px-6 py-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
-                <span class="flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    Export Excel
-                </span>
+            <a href="{{ route('wali-kelas.recap.export', ['month' => $month, 'year' => $year]) }}" class="bg-blue-900 hover:bg-blue-800 text-white rounded-lg px-4 py-2.5 text-sm font-medium flex items-center gap-2 transition-all">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                Download CSV
             </a>
-
-            <!-- Tombol Cetak -->
-            <button onclick="window.print()" class="px-6 py-2 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
-                <span class="flex items-center">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                    </svg>
-                    Cetak Laporan
-                </span>
+            <button onclick="window.print()" class="bg-white hover:bg-gray-50 border border-gray-300 text-gray-700 rounded-lg px-4 py-2.5 text-sm font-medium flex items-center gap-2 transition-all shadow-sm">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                Cetak
             </button>
         </div>
-    </div>
+    </header>
 
-    <!-- Area yang akan dicetak -->
     <div id="print-area">
-        <!-- Header Laporan (hanya muncul saat print) -->
         <div class="print-header hidden print:block mb-6 text-center">
-            <h1 class="text-2xl font-bold text-gray-900">REKAPITULASI ABSENSI BULANAN</h1>
-            <h2 class="text-xl font-semibold text-gray-700 mt-2">{{ $classroom->name }}</h2>
-            <p class="text-gray-600 mt-1">
-                Periode: 
-                @php
-                    $monthNames = [
-                        '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
-                        '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
-                        '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
-                    ];
-                @endphp
-                {{ $monthNames[$month] }} {{ $year }}
-            </p>
+            <h1 class="text-xl font-bold text-gray-900">REKAPITULASI ABSENSI BULANAN</h1>
+            <h2 class="text-base font-semibold text-gray-700 mt-1">{{ $classroom->name }} · SMA 1</h2>
+            <p class="text-sm text-gray-500 mt-1">Periode: {{ $monthNames[$month] }} {{ $year }}</p>
             <hr class="my-4 border-gray-300">
         </div>
 
-        <!-- Info Card (tidak muncul saat print) -->
-        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg p-6 mb-6 text-white print:hidden">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <div class="w-16 h-16 bg-white/20 rounded-lg flex items-center justify-center">
-                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-2xl font-bold">{{ $classroom->name }}</h3>
-                        <p class="text-indigo-100 text-sm">Total Siswa: {{ $students->count() }} orang</p>
-                    </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 print:hidden">
+            <div class="bg-white p-8 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between border border-gray-100">
+                <span class="text-[#444651] font-label text-sm uppercase tracking-wider">Rata-rata Kehadiran</span>
+                <div class="mt-4">
+                    <span class="text-4xl font-bold font-headline text-[#00236f]">{{ $attendancePercentage }}%</span>
+                    <p class="text-[#006c49] text-sm font-medium mt-1 flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> {{ $totalHadirOverall }} Kehadiran Total
+                    </p>
                 </div>
-                <div class="text-right">
-                    <div class="text-sm text-indigo-100">Periode Rekap</div>
-                    <div class="text-2xl font-bold">{{ $monthNames[$month] }}</div>
-                    <div class="text-lg text-indigo-100">{{ $year }}</div>
+            </div>
+            
+            <div class="bg-white p-8 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between border border-gray-100">
+                <span class="text-[#444651] font-label text-sm uppercase tracking-wider">Total Ketidakhadiran</span>
+                <div class="mt-4">
+                    <span class="text-4xl font-bold font-headline text-[#4b1c00]">{{ $totalSakitIzin }} Hari</span>
+                    <p class="text-[#444651] text-sm mt-1">Sakit & Izin terakumulasi</p>
+                </div>
+            </div>
+            
+            <div class="bg-white p-8 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between relative overflow-hidden group border border-gray-100">
+                <div class="relative z-10">
+                    <span class="text-[#444651] font-label text-sm uppercase tracking-wider">Status Kelas</span>
+                    <div class="mt-4 flex items-center gap-3">
+                        <div class="w-3 h-3 rounded-full {{ $statusColor }}"></div>
+                        <span class="text-2xl font-bold font-headline text-[#191c1e]">{{ $statusKelas }}</span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Tabel Rekap -->
-        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-            <!-- Card Header -->
-            <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-6 py-4 border-b border-gray-200 print:bg-white">
-                <h4 class="font-bold text-gray-800 text-lg">Data Rekapitulasi Kehadiran</h4>
-                <p class="text-sm text-gray-600">Rincian kehadiran siswa selama periode terpilih</p>
-            </div>
-
+        <div class="bg-white rounded-xl overflow-hidden shadow-[0_12px_40px_rgba(0,35,111,0.04)] border border-gray-100">
             <div class="overflow-x-auto">
                 @if($students->isEmpty())
-                    <!-- Empty State -->
-                    <div class="text-center py-12">
-                        <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                        </svg>
-                        <p class="text-gray-500 font-medium">Belum ada data siswa</p>
-                        <p class="text-gray-400 text-sm mt-1">Silakan tambahkan siswa terlebih dahulu</p>
-                    </div>
+                <div class="text-center py-14 text-gray-400">
+                    <p class="font-medium text-gray-500 font-headline">Belum ada data siswa</p>
+                </div>
                 @else
-                    <table class="min-w-full">
-                        <thead>
-                            <tr class="border-b-2 border-gray-200 bg-gray-50">
-                                <th class="px-4 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider w-16">No</th>
-                                <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">NIS</th>
-                                <th class="px-4 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Nama Siswa</th>
-                                <th class="px-4 py-3 text-center text-xs font-bold text-blue-700 uppercase tracking-wider w-24">Hadir</th>
-                                <th class="px-4 py-3 text-center text-xs font-bold text-yellow-700 uppercase tracking-wider w-24">Izin</th>
-                                <th class="px-4 py-3 text-center text-xs font-bold text-green-700 uppercase tracking-wider w-24">Sakit</th>
-                                <th class="px-4 py-3 text-center text-xs font-bold text-red-700 uppercase tracking-wider w-24">Alpa</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white">
-                            @foreach($students as $index => $student)
-                            @php
-                                // Hitung total masing-masing status
-                                $totalHadir = $student->attendances->where('status', 'Hadir')->count();
-                                $totalIzin = $student->attendances->where('status', 'Izin')->count();
-                                $totalSakit = $student->attendances->where('status', 'Sakit')->count();
-                                $totalAlpa = $student->attendances->where('status', 'Alpa')->count();
-                            @endphp
-                            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors print:hover:bg-white">
-                                <td class="px-4 py-4 whitespace-nowrap text-center text-sm text-gray-900 font-medium">
-                                    {{ $index + 1 }}
-                                </td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">
-                                    {{ $student->nis }}
-                                </td>
-                                <td class="px-4 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="w-9 h-9 flex-shrink-0 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-full flex items-center justify-center print:hidden">
-                                            <span class="text-white font-bold text-xs">{{ substr($student->name, 0, 2) }}</span>
-                                        </div>
-                                        <div class="ml-3 print:ml-0">
-                                            <div class="text-sm font-semibold text-gray-900">{{ $student->name }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-4 py-4 whitespace-nowrap text-center">
-                                    <span class="inline-flex items-center justify-center w-12 h-12 bg-blue-100 text-blue-700 font-bold rounded-lg text-lg print:bg-transparent print:w-auto print:h-auto">
-                                        {{ $totalHadir }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-4 whitespace-nowrap text-center">
-                                    <span class="inline-flex items-center justify-center w-12 h-12 bg-yellow-100 text-yellow-700 font-bold rounded-lg text-lg print:bg-transparent print:w-auto print:h-auto">
-                                        {{ $totalIzin }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-4 whitespace-nowrap text-center">
-                                    <span class="inline-flex items-center justify-center w-12 h-12 bg-green-100 text-green-700 font-bold rounded-lg text-lg print:bg-transparent print:w-auto print:h-auto">
-                                        {{ $totalSakit }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-4 whitespace-nowrap text-center">
-                                    <span class="inline-flex items-center justify-center w-12 h-12 bg-red-100 text-red-700 font-bold rounded-lg text-lg print:bg-transparent print:w-auto print:h-auto">
-                                        {{ $totalAlpa }}
-                                    </span>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                        <tfoot class="bg-gray-50 border-t-2 border-gray-300">
-                            <tr>
-                                <td colspan="3" class="px-4 py-4 text-right font-bold text-gray-900 uppercase">Total:</td>
-                                <td class="px-4 py-4 text-center">
-                                    <span class="inline-flex items-center justify-center font-bold text-blue-700 text-lg">
-                                        {{ $students->sum(function($s) { return $s->attendances->where('status', 'Hadir')->count(); }) }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-4 text-center">
-                                    <span class="inline-flex items-center justify-center font-bold text-yellow-700 text-lg">
-                                        {{ $students->sum(function($s) { return $s->attendances->where('status', 'Izin')->count(); }) }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-4 text-center">
-                                    <span class="inline-flex items-center justify-center font-bold text-green-700 text-lg">
-                                        {{ $students->sum(function($s) { return $s->attendances->where('status', 'Sakit')->count(); }) }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-4 text-center">
-                                    <span class="inline-flex items-center justify-center font-bold text-red-700 text-lg">
-                                        {{ $students->sum(function($s) { return $s->attendances->where('status', 'Alpa')->count(); }) }}
-                                    </span>
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </table>
+                <table class="w-full border-collapse text-left">
+                    <thead>
+                        <tr class="bg-[#f3f4f6]/50 print:bg-gray-100 border-b border-[#edeef0]">
+                            <th class="px-8 py-6 text-xs font-bold uppercase tracking-widest text-[#444651] font-label">Nama Siswa</th>
+                            <th class="px-6 py-6 text-center text-xs font-bold uppercase tracking-widest text-[#444651] font-label">H</th>
+                            <th class="px-6 py-6 text-center text-xs font-bold uppercase tracking-widest text-[#444651] font-label">I</th>
+                            <th class="px-6 py-6 text-center text-xs font-bold uppercase tracking-widest text-[#444651] font-label">S</th>
+                            <th class="px-6 py-6 text-center text-xs font-bold uppercase tracking-widest text-[#444651] font-label">A</th>
+                            <th class="px-8 py-6 text-right text-xs font-bold uppercase tracking-widest text-[#444651] font-label print:hidden">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#edeef0]">
+                        @foreach($students as $index => $student)
+                        @php
+                            $totalHadir = $student->attendances->where('status', 'Hadir')->count();
+                            $totalIzin  = $student->attendances->where('status', 'Izin')->count();
+                            $totalSakit = $student->attendances->where('status', 'Sakit')->count();
+                            $totalAlpa  = $student->attendances->where('status', 'Alpa')->count();
+                            $studentTotal = $totalHadir + $totalSakit + $totalIzin + $totalAlpa;
+                            $studentPercentage = $studentTotal > 0 ? round(($totalHadir / $studentTotal) * 100) : 0;
+                            $percentageColor = $studentPercentage < 75 ? 'bg-[#ffdbcb]' : ($studentPercentage < 90 ? 'bg-[#00236f]' : 'bg-[#4edea3]');
+                            $textColor = $studentPercentage < 75 ? 'text-[#4b1c00]' : ($studentPercentage < 90 ? 'text-[#00236f]' : 'text-[#006c49]');
+                        @endphp
+                        <tr class="hover:bg-[#f3f4f6]/50 transition-colors group print:hover:bg-transparent">
+                            <td class="px-8 py-6">
+                                <p class="font-bold text-[#191c1e] text-sm md:text-base print:text-black">{{ $student->name }}</p>
+                                <p class="text-xs text-[#444651]">NIS: {{ $student->nis }}</p>
+                            </td>
+                            <td class="px-6 py-6 text-center"><span class="font-bold text-[#00714d]">{{ $totalHadir ?: 0 }}</span></td>
+                            <td class="px-6 py-6 text-center"><span class="font-bold text-[#00236f]">{{ $totalIzin ?: 0 }}</span></td>
+                            <td class="px-6 py-6 text-center"><span class="font-bold text-amber-800">{{ $totalSakit ?: 0 }}</span></td>
+                            <td class="px-6 py-6 text-center"><span class="font-bold text-rose-800">{{ $totalAlpa ?: 0 }}</span></td>
+                            <td class="px-8 py-6 text-right print:hidden">
+                                <span class="text-xl font-extrabold font-headline {{ $textColor }}">{{ $studentPercentage }}%</span>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
                 @endif
+            </div>
+            <div class="bg-[#f8f9fb] px-8 py-4 flex items-center justify-between border-t border-[#edeef0] print:hidden">
+                <span class="text-sm text-[#444651] font-label italic">Data: {{ date('d F Y, H:i') }} WIB</span>
             </div>
         </div>
 
-        <!-- Footer Print (hanya muncul saat print) -->
-        <div class="hidden print:block mt-12">
+        <div class="hidden print:block mt-10">
             <div class="flex justify-between items-end">
-                <div class="text-sm text-gray-600">
-                    <p>Dicetak pada: {{ date('d F Y, H:i') }}</p>
-                </div>
+                <div class="text-sm text-gray-600"><p>Dicetak pada: {{ date('d F Y, H:i') }}</p></div>
                 <div class="text-center">
                     <p class="text-sm text-gray-600 mb-16">Wali Kelas,</p>
                     <p class="font-bold text-gray-900 border-t border-gray-900 pt-1">{{ auth()->user()->name }}</p>
@@ -242,68 +179,14 @@
 
 <style>
     @media print {
-        body * {
-            visibility: hidden;
-        }
-        #print-area, #print-area * {
-            visibility: visible;
-        }
-        #print-area {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            padding: 20px;
-        }
-        /* Tambahan styling untuk print */
-        .print\:block {
-            display: block !important;
-        }
-        .print\:hidden {
-            display: none !important;
-        }
-        table {
-            page-break-inside: auto;
-        }
-        tr {
-            page-break-inside: avoid;
-            page-break-after: auto;
-        }
+        body * { visibility: hidden; }
+        #print-area, #print-area * { visibility: visible; }
+        #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 20px;}
+        .print\:block { display: block !important; }
+        .print\:hidden { display: none !important; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th:first-child, td:first-child { text-align: left; }
     }
 </style>
-
-@push('scripts')
-<script>
-    // Success Alert jika ada session success
-    @if(session('success'))
-    Swal.fire({
-        icon: 'success',
-        title: 'Berhasil!',
-        text: '{{ session('success') }}',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#4F46E5',
-        timer: 3000,
-        customClass: {
-            popup: 'rounded-2xl',
-            confirmButton: 'rounded-lg px-6 py-2'
-        }
-    });
-    @endif
-
-    // Error Alert jika ada session error
-    @if(session('error'))
-    Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: '{{ session('error') }}',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#EF4444',
-        customClass: {
-            popup: 'rounded-2xl',
-            confirmButton: 'rounded-lg px-6 py-2'
-        }
-    });
-    @endif
-</script>
-@endpush
 @endsection

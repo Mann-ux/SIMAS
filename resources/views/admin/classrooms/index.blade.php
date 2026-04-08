@@ -6,234 +6,268 @@
 @section('page-description', 'Manajemen data kelas dan wali kelas')
 
 @section('content')
-<div class="space-y-6" x-data="{ filter: 'semua', deleteId: null }">
-    
-    <!-- Header Section -->
-    <div class="flex items-center justify-between flex-wrap gap-4">
-        <div class="flex items-center space-x-4">
-            <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
-                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                </svg>
+<div class="space-y-10">
+
+    <!-- Page Header Section -->
+    <section class="max-w-6xl">
+        <h2 class="text-4xl font-manrope font-extrabold text-on-surface tracking-tight">Kelola Kelas</h2>
+        <p class="mt-2 text-on-surface-variant font-body text-lg max-w-2xl">
+            Kelola struktur akademik sekolah Anda dengan presisi. Tambah, edit, atau hapus data kelas.
+        </p>
+    </section>
+
+    <!-- Metrics Section -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl">
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-5">
+            <div class="w-12 h-12 bg-[#00236f]/5 rounded-xl flex items-center justify-center">
+                <span class="material-symbols-outlined text-[#00236f]">school</span>
             </div>
             <div>
-                <h2 class="text-2xl font-bold text-gray-800">Kelola Kelas</h2>
-                <p class="text-sm text-gray-600 mt-1">Total: <span class="font-semibold text-blue-600">{{ $classrooms->count() }}</span> kelas</p>
+                <p class="text-[10px] font-manrope font-bold text-gray-500 uppercase tracking-widest">Total Kelas</p>
+                <p class="text-2xl font-manrope font-extrabold text-[#00236f]">{{ $classrooms->count() }}</p>
             </div>
         </div>
-        
-        <a href="{{ route('classrooms.create') }}" class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-            </svg>
-            Tambah Kelas Baru
-        </a>
-    </div>
-
-     <!-- Filter & Grid Section -->
-    <div x-data="{ filter: 'semua' }" class="space-y-6">
-        
-        <!-- Segmented Control Filter -->
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <div class="flex items-center justify-between flex-wrap gap-4">
-                <div>
-                    <h3 class="text-lg font-bold text-gray-800 mb-1">Filter by Tingkat</h3>
-                    <p class="text-sm text-gray-600">Pilih tingkat kelas untuk ditampilkan</p>
-                </div>
-                
-                <!-- Toggle Pill / Segmented Control -->
-                <div class="inline-flex bg-gray-100 p-1.5 rounded-full gap-1">
-                    <button 
-                        @click="filter = 'semua'" 
-                        :class="filter === 'semua' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-200'"
-                        class="px-7 py-2.5 rounded-full font-semibold transition-all duration-200">
-                        Semua
-                    </button>
-                    <button 
-                        @click="filter = 'X'" 
-                        :class="filter === 'X' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-200'"
-                        class="px-7 py-2.5 rounded-full font-semibold transition-all duration-200">
-                        X
-                    </button>
-                    <button 
-                        @click="filter = 'XI'" 
-                        :class="filter === 'XI' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-200'"
-                        class="px-7 py-2.5 rounded-full font-semibold transition-all duration-200">
-                        XI
-                    </button>
-                    <button 
-                        @click="filter = 'XII'" 
-                        :class="filter === 'XII' ? 'bg-blue-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-200'"
-                        class="px-7 py-2.5 rounded-full font-semibold transition-all duration-200">
-                        XII
-                    </button>
-                </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-5">
+            <div class="w-12 h-12 bg-[#00236f]/5 rounded-xl flex items-center justify-center">
+                <span class="material-symbols-outlined text-[#00236f]">group</span>
+            </div>
+            <div>
+                <p class="text-[10px] font-manrope font-bold text-gray-500 uppercase tracking-widest">Total Siswa</p>
+                <p class="text-2xl font-manrope font-extrabold text-[#00236f]">{{ $classrooms->sum('students_count') }}</p>
             </div>
         </div>
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-5">
+            <div class="w-12 h-12 bg-[#00236f]/5 rounded-xl flex items-center justify-center">
+                <span class="material-symbols-outlined text-[#00236f]">monitoring</span>
+            </div>
+            <div>
+                <p class="text-[10px] font-manrope font-bold text-gray-500 uppercase tracking-widest">Rata-Rata Siswa/Kelas</p>
+                <p class="text-2xl font-manrope font-extrabold text-[#00236f]">
+                    {{ $classrooms->count() > 0 ? round($classrooms->sum('students_count') / $classrooms->count()) : 0 }}
+                </p>
+            </div>
+        </div>
+    </section>
 
-        <!-- All Classrooms Grid with Dynamic Filter -->
-        <div>
+    <!-- Filter & Action Bar -->
+    <div x-data="{ filter: 'semua', search: '' }" class="space-y-6">
+
+        <!-- Filter by Tingkat -->
+        <section class="max-w-6xl bg-white p-6 rounded-2xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 border border-gray-100">
+            <div class="flex flex-col">
+                <h3 class="text-lg font-manrope font-bold text-gray-800">Filter by Tingkat</h3>
+                <p class="text-sm text-gray-500">Pilih tingkat kelas untuk ditampilkan</p>
+            </div>
+            <div class="flex items-center p-1 bg-gray-100 rounded-xl">
+                <button @click="filter = 'semua'" :class="filter === 'semua' ? 'bg-white text-[#00236f] shadow-sm' : 'text-gray-500 hover:text-gray-800'" class="px-6 py-2 text-sm font-manrope font-bold rounded-lg transition-all">Semua</button>
+                <button @click="filter = 'X'"     :class="filter === 'X'     ? 'bg-white text-[#00236f] shadow-sm' : 'text-gray-500 hover:text-gray-800'" class="px-6 py-2 text-sm font-manrope font-bold rounded-lg transition-all">X</button>
+                <button @click="filter = 'XI'"    :class="filter === 'XI'    ? 'bg-white text-[#00236f] shadow-sm' : 'text-gray-500 hover:text-gray-800'" class="px-6 py-2 text-sm font-manrope font-bold rounded-lg transition-all">XI</button>
+                <button @click="filter = 'XII'"   :class="filter === 'XII'   ? 'bg-white text-[#00236f] shadow-sm' : 'text-gray-500 hover:text-gray-800'" class="px-6 py-2 text-sm font-manrope font-bold rounded-lg transition-all">XII</button>
+            </div>
+        </section>
+
+        <!-- Search & Add Button -->
+        <section class="flex flex-col md:flex-row gap-4 items-center justify-between max-w-6xl">
+            <div class="relative w-full md:w-96">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">search</span>
+                <input
+                    x-model="search"
+                    class="w-full pl-12 pr-4 py-3 bg-white border border-gray-200 focus:border-[#00236f] focus:ring-0 rounded-xl text-sm transition-all placeholder:text-gray-400 shadow-sm outline-none"
+                    placeholder="Cari nama kelas..."
+                    type="text"
+                />
+            </div>
+            <a href="{{ route('classrooms.create') }}" class="w-full md:w-auto px-6 py-3 bg-[#00236f] text-white font-manrope font-bold rounded-xl flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-sm">
+                <span class="material-symbols-outlined text-xl">add</span>
+                Tambah Kelas
+            </a>
+        </section>
+
+        <!-- Editorial Table -->
+        <section class="max-w-6xl bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
             @if($classrooms->count() > 0)
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="w-full overflow-x-auto hidden md:block">
+            <table class="w-full text-left border-separate border-spacing-0">
+                <thead>
+                    <tr class="bg-gray-50 whitespace-nowrap">
+                        <th class="px-8 py-5 text-[11px] font-manrope font-bold uppercase tracking-widest text-gray-500">Nama Kelas</th>
+                        <th class="px-8 py-5 text-[11px] font-manrope font-bold uppercase tracking-widest text-gray-500">Wali Kelas</th>
+                        <th class="px-8 py-5 text-[11px] font-manrope font-bold uppercase tracking-widest text-gray-500">Jumlah Siswa</th>
+                        <th class="px-8 py-5 text-[11px] font-manrope font-bold uppercase tracking-widest text-gray-500 text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @foreach($classrooms as $classroom)
+                    @php
+                        $initial  = strtoupper(substr($classroom->waliKelas->name ?? '?', 0, 1));
+                        $isFemale = in_array($initial, ['A','E','I','O','U','R','S','N','D','F','L','M','P','T','W','Y']);
+                        $avatarBg = $isFemale ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700';
+                    @endphp
+                    <tr
+                        x-show="(filter === 'semua' || filter === '{{ $classroom->tingkat }}') && (search === '' || '{{ strtolower($classroom->name) }}'.includes(search.toLowerCase()))"
+                        x-transition:enter="transition ease-out duration-200"
+                        x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100"
+                        x-transition:leave="transition ease-in duration-150"
+                        x-transition:leave-start="opacity-100"
+                        x-transition:leave-end="opacity-0"
+                        class="group hover:bg-blue-50/30 transition-colors">
+                        <td class="px-8 py-6">
+                            <div class="flex flex-col">
+                                <span class="text-base font-manrope font-bold text-gray-900">{{ $classroom->name }}</span>
+                                <span class="text-xs text-gray-400">Level {{ $classroom->tingkat }} Reg</span>
+                            </div>
+                        </td>
+                        <td class="px-8 py-6">
+                            <div class="flex items-center gap-3">
+                                <span class="w-8 h-8 rounded-full {{ $avatarBg }} flex items-center justify-center font-manrope font-bold text-xs">{{ $initial }}</span>
+                                <span class="text-sm font-medium text-gray-800">{{ $classroom->waliKelas->name ?? '-' }}</span>
+                            </div>
+                        </td>
+                        <td class="px-8 py-6">
+                            <span class="px-3 py-1 bg-gray-100 rounded-full text-xs font-semibold text-gray-600">{{ $classroom->students_count }} Siswa</span>
+                        </td>
+                        <td class="px-8 py-6 text-right whitespace-nowrap">
+                            <div class="flex items-center justify-end gap-2">
+                                <a href="{{ route('classrooms.show', $classroom->id) }}"
+                                   class="px-4 py-2 text-xs font-manrope font-bold text-[#00236f] hover:bg-[#00236f]/5 rounded-lg transition-colors">
+                                    Detail
+                                </a>
+                                <button type="button"
+                                        onclick="confirmDelete({{ $classroom->id }})"
+                                        class="px-4 py-2 text-xs font-manrope font-bold text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                    Hapus
+                                </button>
+                                <form id="delete-form-{{ $classroom->id }}" action="{{ route('classrooms.destroy', $classroom->id) }}" method="POST" class="hidden">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            </div>{{-- end overflow-x-auto --}}
+
+            {{-- ══════════════════════════════════════
+                 MOBILE CARD VIEW (hidden on md+)
+                 ══════════════════════════════════════ --}}
+            <div class="grid grid-cols-1 gap-3 md:hidden px-4 py-4">
                 @foreach($classrooms as $classroom)
                 @php
-                    $gradientClass = match($classroom->tingkat) {
-                        'X' => 'from-blue-500 to-blue-600',
-                        'XI' => 'from-purple-500 to-purple-600',
-                        'XII' => 'from-orange-500 to-orange-600',
-                        default => 'from-gray-500 to-gray-600'
-                    };
-                    $textClass = match($classroom->tingkat) {
-                        'X' => 'text-blue-100',
-                        'XI' => 'text-purple-100',
-                        'XII' => 'text-orange-100',
-                        default => 'text-gray-100'
-                    };
+                    $initial  = strtoupper(substr($classroom->waliKelas->name ?? '?', 0, 1));
+                    $isFemale = in_array($initial, ['A','E','I','O','U','R','S','N','D','F','L','M','P','T','W','Y']);
+                    $avatarBg = $isFemale ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700';
                 @endphp
-                <div 
-                    x-show="filter === 'semua' || filter === '{{ $classroom->tingkat }}'"  
-                    x-transition:enter="transition ease-out duration-300" 
-                    x-transition:enter-start="opacity-0 transform scale-95" 
-                    x-transition:enter-end="opacity-100 transform scale-100"
-                    x-transition:leave="transition ease-in duration-200" 
-                    x-transition:leave-start="opacity-100 transform scale-100" 
-                    x-transition:leave-end="opacity-0 transform scale-95"
-                    @click="window.location.href = '{{ route('classrooms.show', $classroom->id) }}'"
-                    class="bg-white rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden border border-gray-100 cursor-pointer">
-                    <!-- Card Header with Gradient -->
-                    <div class="bg-gradient-to-br {{ $gradientClass }} px-6 py-5">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-12 h-12 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                                    <span class="text-2xl">
-                                        @if($classroom->tingkat === 'X') 🎓
-                                        @elseif($classroom->tingkat === 'XI') 📚
-                                        @elseif($classroom->tingkat === 'XII') 🎯
-                                        @else 📖
-                                        @endif
-                                    </span>
-                                </div>
-                                <div>
-                                    <h3 class="text-xl font-bold text-white">{{ $classroom->name }}</h3>
-                                    <p class="{{ $textClass }} text-sm mt-0.5">Jumlah Siswa: <span class="font-semibold">{{ $classroom->students_count }}</span></p>
-                                </div>
+                <div
+                    x-show="(filter === 'semua' || filter === '{{ $classroom->tingkat }}') && (search === '' || '{{ strtolower($classroom->name) }}'.includes(search.toLowerCase()))"
+                    x-transition:enter="transition ease-out duration-200"
+                    x-transition:enter-start="opacity-0 -translate-y-1"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    x-transition:leave="transition ease-in duration-150"
+                    x-transition:leave-start="opacity-100"
+                    x-transition:leave-end="opacity-0"
+                    class="bg-white border border-gray-200 rounded-xl shadow-sm p-4 flex flex-col gap-3"
+                >
+                    {{-- Card Header: Nama Kelas --}}
+                    <div class="border-b border-gray-100 pb-2">
+                        <p class="text-base font-manrope font-bold text-gray-900">{{ $classroom->name }}</p>
+                        <p class="text-xs text-gray-400 mt-0.5">Level {{ $classroom->tingkat }} Reg</p>
+                    </div>
+
+                    {{-- Card Body: Info Grid --}}
+                    <div class="grid grid-cols-2 gap-3">
+                        {{-- Wali Kelas --}}
+                        <div class="flex flex-col gap-1">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Wali Kelas</p>
+                            <div class="flex items-center gap-2">
+                                <span class="w-7 h-7 rounded-full {{ $avatarBg }} flex items-center justify-center font-manrope font-bold text-xs flex-shrink-0">{{ $initial }}</span>
+                                <span class="text-xs font-medium text-gray-700 leading-tight">{{ $classroom->waliKelas->name ?? '-' }}</span>
                             </div>
-                            
-                            <!-- Three Dots Menu (Alpine.js Dropdown) -->
-                            <div class="relative" x-data="{ open: false }">
-                                <button @click.stop="open = !open" class="w-8 h-8 bg-white bg-opacity-20 hover:bg-opacity-30 rounded-lg flex items-center justify-center transition-all">
-                                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
-                                    </svg>
-                                </button>
-                                
-                                <!-- Dropdown Menu -->
-                                <div x-show="open" @click.away="open = false" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95" class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl z-10 border border-gray-100 overflow-hidden">
-                                    <a href="{{ route('classrooms.edit', $classroom->id) }}" class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-yellow-50 hover:text-yellow-600 transition-colors">
-                                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                        </svg>
-                                        Edit Kelas
-                                    </a>
-                                    <button @click="deleteId = {{ $classroom->id }}; $refs.deleteModal.showModal(); open = false" class="w-full flex items-center px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                        </svg>
-                                        Hapus Kelas
-                                    </button>
-                                </div>
-                            </div>
+                        </div>
+                        {{-- Jumlah Siswa --}}
+                        <div class="flex flex-col gap-1">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Jumlah Siswa</p>
+                            <span class="px-3 py-1 bg-gray-100 rounded-full text-xs font-semibold text-gray-600 w-fit">{{ $classroom->students_count }} Siswa</span>
                         </div>
                     </div>
-                    
-                    <!-- Card Body -->
-                    <div class="p-6">
-                        <div class="space-y-3">
-                            <div class="flex items-start">
-                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                                    </svg>
-                                </div>
-                                <div class="ml-3 flex-1">
-                                    <p class="text-xs text-gray-500 font-semibold uppercase tracking-wide">Wali Kelas</p>
-                                    <p class="text-sm font-bold text-gray-800 mt-1">{{ $classroom->user->name ?? '-' }}</p>
-                                    <p class="text-xs text-gray-500 mt-0.5">{{ $classroom->user->email ?? '-' }}</p>
-                                </div>
-                            </div>
-                        </div>
+
+                    {{-- Card Footer: Action Buttons --}}
+                    <div class="flex items-center justify-between pt-2 border-t border-gray-100 mt-1">
+                        <a
+                            href="{{ route('classrooms.show', $classroom->id) }}"
+                            class="flex-1 text-center px-4 py-2 text-xs font-manrope font-bold text-[#00236f] bg-[#00236f]/5 hover:bg-[#00236f]/10 rounded-lg transition-colors mr-2"
+                        >
+                            Detail
+                        </a>
+                        <button
+                            type="button"
+                            onclick="confirmDelete({{ $classroom->id }})"
+                            class="flex-1 text-center px-4 py-2 text-xs font-manrope font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                        >
+                            Hapus
+                        </button>
+                        <form id="delete-form-{{ $classroom->id }}" action="{{ route('classrooms.destroy', $classroom->id) }}" method="POST" class="hidden">
+                            @csrf
+                            @method('DELETE')
+                        </form>
                     </div>
                 </div>
                 @endforeach
-            </div>
+            </div>{{-- end mobile card view --}}
+
             @else
-            <div class="bg-white rounded-xl shadow-md p-12 text-center border border-gray-100">
+            <div class="p-16 text-center">
                 <div class="flex flex-col items-center">
-                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                        <svg class="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-                        </svg>
+                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-5">
+                        <span class="material-symbols-outlined text-4xl text-gray-400">school</span>
                     </div>
-                    <h3 class="text-lg font-bold text-gray-700 mb-2">Belum Ada Data Kelas</h3>
-                    <p class="text-gray-500 mb-4">Tidak ada data kelas yang terdaftar</p>
-                    <a href="{{ route('classrooms.create') }}" class="inline-flex items-center px-5 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all">
-                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                        </svg>
-                        Tambah Kelas Baru
+                    <h3 class="text-lg font-manrope font-bold text-gray-700 mb-2">Belum Ada Data Kelas</h3>
+                    <p class="text-gray-400 mb-6 font-body">Tidak ada data kelas yang terdaftar. Mulai dengan menambahkan kelas baru.</p>
+                    <a href="{{ route('classrooms.create') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-[#00236f] text-white font-manrope font-bold rounded-xl hover:opacity-90 transition-all shadow-sm">
+                        <span class="material-symbols-outlined text-xl">add</span>
+                        Tambah Kelas Pertama
                     </a>
                 </div>
             </div>
             @endif
-        </div>
-    </div>
+        </section>
 
-    <!-- Delete Confirmation Modal (Alpine.js + HTML Dialog) -->
-    <dialog x-ref="deleteModal" class="backdrop:bg-black backdrop:bg-opacity-50 rounded-2xl shadow-2xl p-0 w-full max-w-md">
-        <div class="bg-white rounded-2xl overflow-hidden">
-            <!-- Modal Header -->
-            <div class="bg-gradient-to-r from-red-500 to-red-600 px-6 py-5">
-                <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 bg-white bg-opacity-20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-white">Konfirmasi Penghapusan</h3>
-                        <p class="text-red-100 text-sm mt-0.5">Tindakan ini tidak dapat dibatalkan</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Modal Body -->
-            <div class="p-6">
-                <p class="text-gray-700 text-base leading-relaxed">
-                    Apakah Anda yakin ingin menghapus data kelas ini? <br>
-                    <span class="font-semibold text-red-600">Semua data terkait akan terhapus secara permanen.</span>
-                </p>
-            </div>
-            
-            <!-- Modal Footer -->
-            <div class="bg-gray-50 px-6 py-4 flex items-center justify-end space-x-3">
-                <button @click="$refs.deleteModal.close()" class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-all">
-                    Batal
-                </button>
-                <form :action="`{{ route('classrooms.index') }}/${deleteId}`" method="POST" class="inline-block">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all">
-                        Ya, Hapus!
-                    </button>
-                </form>
-            </div>
-        </div>
-    </dialog>
+    </div>{{-- end x-data --}}
 
 </div>
 
 @push('scripts')
 <script>
+    function confirmDelete(classroomId) {
+        Swal.fire({
+            title: 'Hapus Kelas?',
+            text: 'Yakin ingin menghapus kelas ini beserta jadwal di dalamnya?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            buttonsStyling: false,
+            customClass: {
+                popup: 'bg-white rounded-2xl shadow-2xl border border-gray-100',
+                title: 'text-2xl font-bold text-gray-800',
+                htmlContainer: 'text-base text-gray-500 mt-2',
+                confirmButton: 'mt-4 bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95',
+                cancelButton: 'mt-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95 ml-2'
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById(`delete-form-${classroomId}`);
+                if (form) {
+                    form.submit();
+                }
+            }
+        });
+    }
+
     // Success Notification dengan SweetAlert2
     @if(session('success'))
     Swal.fire({
@@ -242,10 +276,13 @@
         text: '{{ session('success') }}',
         showConfirmButton: false,
         timer: 2000,
-            customClass: {
-                customClass: {
-            popup: 'rounded-2xl',
-            confirmButton: 'rounded-lg px-6 py-2'
+        buttonsStyling: false,
+        customClass: {
+            popup: 'bg-white rounded-2xl shadow-2xl border border-gray-100',
+            title: 'text-2xl font-bold text-gray-800',
+            htmlContainer: 'text-base text-gray-500 mt-2',
+            confirmButton: 'mt-4 bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95',
+            cancelButton: 'mt-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95 ml-2'
         }
     });
     @endif

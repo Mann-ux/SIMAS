@@ -2,39 +2,116 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\AttendanceExport;
 use App\Models\Attendance;
 use App\Models\Classroom;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AttendanceController extends Controller
 {
+    /**
+     * Show dashboard overview for class pengurus (ketua/sekretaris).
+     */
+    public function index()
+    {
+        $user = Auth::user();
+
+        if (! $this->canManageAsPengurus($user)) {
+            abort(403, 'UNAUTHORIZED ACTION.');
+        }
+
+        $classroom = $this->findPengurusClassroom($user);
+        $today = Carbon::today('Asia/Jakarta')->toDateString();
+
+        if (!$classroom) {
+            $recap_hari_ini = [
+                'Hadir' => 0,
+                'Izin' => 0,
+                'Sakit' => 0,
+                'Alpa' => 0,
+            ];
+
+            return view('pengurus.dashboard', [
+                'classroom' => null,
+                'total_siswa' => 0,
+                'recap_hari_ini' => $recap_hari_ini,
+                'today' => $today,
+            ])->with('error', 'Anda belum ditugaskan sebagai pengurus di kelas manapun. Silakan hubungi admin.');
+        }
+
+        $students = $classroom->students()->orderBy('name')->get();
+        $total_siswa = $students->count();
+        $attendances = Attendance::whereIn('student_id', $students->pluck('id'))
+            ->whereDate('date', $today)
+            ->get();
+
+        $recap_hari_ini = [
+            'Hadir' => $attendances->where('status', 'Hadir')->count(),
+            'Izin' => $attendances->where('status', 'Izin')->count(),
+            'Sakit' => $attendances->where('status', 'Sakit')->count(),
+            'Alpa' => $attendances->where('status', 'Alpa')->count(),
+        ];
+
+        $lastUpdate = Attendance::whereIn('student_id', $students->pluck('id'))
+            ->whereDate('date', $today)
+            ->latest('updated_at')
+            ->first();
+
+        $siswaPerluPerhatian = Attendance::with('student')
+            ->whereIn('student_id', $students->pluck('id'))
+            ->whereDate('date', $today)
+            ->whereIn('status', ['Alpa', 'Izin', 'Sakit'])
+            ->get();
+
+        return view('pengurus.dashboard', compact('classroom', 'total_siswa', 'recap_hari_ini', 'today', 'lastUpdate', 'siswaPerluPerhatian'));
+    }
+
     /**
      * Show the form for creating a new attendance record.
      */
     public function create(Request $request)
     {
-        // Cari kelas yang dimiliki wali kelas yang sedang login
-        $classroom = Classroom::where('user_id', auth()->id())->first();
+        $user = Auth::user();
+        $role = $user->role;
+
+        // Query classroom based on role
+        if ($role === 'wali_kelas') {
+            $classroom = Classroom::where('wali_kelas_id', Auth::id())->first();
+        } else {
+            if (! $this->canManageAsPengurus($user)) {
+                return redirect()->back()->with('error', 'Anda tidak memiliki akses ke fitur ini.');
+            }
+
+            $classroom = $this->findPengurusClassroom($user);
+        }
 
         // Jika tidak ada kelas
         if (!$classroom) {
-            return redirect()->route('wali-kelas.dashboard')
-                ->with('error', 'Anda belum ditugaskan sebagai wali kelas. Silakan hubungi admin.');
+            return redirect()->back()->with('error', 'Anda belum ditugaskan ke kelas manapun. Silakan hubungi admin.');
         } 
 
-        // Ambil semua siswa dari kelas tersebut
-        $students = $classroom->students()->orderBy('name', 'asc')->get();
+        // Ambil semua siswa dari kelas tersebut (urut abjad)
+        $students = $classroom->students()
+            ->orderBy('name', 'asc')
+            ->get();
 
-        // Tangkap parameter date dari URL, default hari ini (Mesin Waktu untuk Wali Kelas)
-        $date = $request->query('date', now()->toDateString());
+        // Handle date based on role
+        $isWali = $role === 'wali_kelas';
+        if ($isWali) {
+            $date = $request->query('date', now()->toDateString());
+        } else {
+            $date = Carbon::today()->timezone('Asia/Jakarta')->toDateString();
+        }
 
         // Ambil data absensi untuk tanggal yang dipilih
         $attendances = Attendance::with('recorder')
-            ->whereIn('student_nis', $students->pluck('nis'))
+            ->whereIn('student_id', $students->pluck('id'))
             ->where('date', $date)
             ->get()
-            ->keyBy('student_nis');
+            ->keyBy('student_id');
 
         // Hitung rekap kehadiran untuk tanggal yang dipilih
         $recap = [
@@ -46,12 +123,28 @@ class AttendanceController extends Controller
 
         // Ambil data absensi terakhir yang diupdate untuk tanggal yang dipilih
         $lastUpdate = Attendance::with('recorder')
-            ->whereIn('student_nis', $students->pluck('nis'))
+            ->whereIn('student_id', $students->pluck('id'))
             ->where('date', $date)
             ->latest('updated_at')
             ->first();
 
-        return view('wali-kelas.attendances.create', compact('classroom', 'students', 'date', 'attendances', 'recap', 'lastUpdate'));
+        $recorder = $lastUpdate?->recorder;
+        $recorderRole = $recorder->role ?? null;
+        $isGuruWali = in_array($recorderRole, ['guru', 'admin', 'wali_kelas'], true);
+        $isPetugasKelas = in_array($recorderRole, ['pengurus', 'sekretaris', 'ketua_kelas'], true);
+        $petugasName = $isPetugasKelas ? ($recorder->name ?? null) : null;
+
+        // Determine view based on role
+        $view = $isWali ? 'wali-kelas.attendances.create' : 'pengurus.attendances.create';
+
+        $data = compact('classroom', 'students', 'attendances', 'recap', 'lastUpdate', 'isGuruWali', 'isPetugasKelas', 'petugasName');
+        if ($isWali) {
+            $data['date'] = $date;
+        } else {
+            $data['today'] = $date;
+        }
+
+        return view($view, $data);
     }
 
     /**
@@ -59,36 +152,69 @@ class AttendanceController extends Controller
      */
     public function store(Request $request)
     {
+        $user = Auth::user();
+        $role = $user->role;
+
         // Validasi input
-        $request->validate([
+        $validationRules = [
             'attendances' => 'required|array',
             'attendances.*.status' => 'required|in:Hadir,Sakit,Izin,Alpa',
-            'date' => 'required|date',
-        ]);
+            'attendances.*.keterangan' => 'nullable|string|max:255',
+        ];
 
-        $date = $request->date;
+        // Tambahkan validasi date jika wali_kelas
+        if ($role === 'wali_kelas') {
+            $validationRules['date'] = 'required|date';
+        }
+
+        $request->validate($validationRules);
+
+        // Handle date based on role
+        if ($role === 'wali_kelas') {
+            $date = $request->date;
+            $classroom = Classroom::where('wali_kelas_id', Auth::id())->first();
+        } else {
+            if (! $this->canManageAsPengurus($user)) {
+                return redirect()->back()->with('error', 'Anda tidak memiliki akses ke fitur ini.');
+            }
+
+            $date = Carbon::today()->timezone('Asia/Jakarta')->toDateString();
+            $classroom = $this->findPengurusClassroom($user);
+        }
+
+        if (!$classroom) {
+            return redirect()->back()->with('error', 'Anda belum ditugaskan ke kelas manapun.');
+        }
+
         $attendanceData = $request->attendances;
-
-        // Dapatkan classroom dan academic_year_id
-        $classroom = Classroom::where('user_id', auth()->id())->first();
         $academicYearId = $classroom->academic_year_id;
 
         // Looping untuk setiap siswa dan simpan/update absensi
-        foreach ($attendanceData as $studentNis => $data) {
+        foreach ($attendanceData as $studentId => $data) {
             Attendance::updateOrCreate(
                 [
-                    'student_nis' => $studentNis,
+                    'student_id' => $studentId,
                     'date' => $date,
                 ],
                 [
                     'status' => $data['status'],
+                    'keterangan' => $data['keterangan'] ?? null,
                     'academic_year_id' => $academicYearId,
-                    'recorded_by' => auth()->id(),
+                    'recorded_by_id' => Auth::id(),
                 ]
             );
         }
 
-        return redirect()->route('wali-kelas.absen.create', ['date' => $date])
+        // Redirect based on role
+        if ($role === 'wali_kelas') {
+            $route = 'wali-kelas.absen.create';
+            $params = ['date' => $date];
+        } else {
+            $route = 'pengurus.absen.create';
+            $params = [];
+        }
+
+        return redirect()->route($route, $params)
             ->with('success', 'Absensi berhasil disimpan untuk tanggal ' . date('d F Y', strtotime($date)) . '!');
     }
 
@@ -101,13 +227,25 @@ class AttendanceController extends Controller
         $month = $request->input('month', date('m'));
         $year = $request->input('year', date('Y'));
 
-        // Cari kelas yang dimiliki wali kelas yang sedang login
-        $classroom = Classroom::where('user_id', auth()->id())->first();
+        $user = Auth::user();
+        $role = $user->role;
+
+        // Cari kelas berdasarkan role user login
+        if ($role === 'wali_kelas') {
+            $classroom = Classroom::where('wali_kelas_id', Auth::id())->first();
+        } elseif ($role === 'sekretaris') {
+            $classroom = Classroom::where('sekretaris_id', Auth::id())->first();
+        } else {
+            return redirect()->back()
+                ->with('error', 'Anda tidak memiliki akses ke fitur ini.');
+        }
 
         // Jika tidak ada kelas
         if (!$classroom) {
-            return redirect()->route('wali-kelas.dashboard')
-                ->with('error', 'Anda belum ditugaskan sebagai wali kelas. Silakan hubungi admin.');
+            $dashboardRoute = $role === 'sekretaris' ? 'sekretaris.dashboard' : 'wali-kelas.dashboard';
+
+            return redirect()->route($dashboardRoute)
+                ->with('error', 'Anda belum ditugaskan ke kelas manapun. Silakan hubungi admin.');
         }
 
         // Ambil siswa beserta absensi yang sudah difilter berdasarkan bulan dan tahun
@@ -125,7 +263,7 @@ class AttendanceController extends Controller
     public function sekretarisCreate()
     {
         // Cari data diri sekretaris di model Student menggunakan NIS
-        $sekretaris = \App\Models\Student::where('nis', auth()->user()->nis)->first();
+        $sekretaris = \App\Models\Student::where('nis', Auth::user()->nis)->first();
 
         // Jika sekretaris tidak ditemukan di tabel students
         if (!$sekretaris) {
@@ -150,10 +288,10 @@ class AttendanceController extends Controller
 
         // Ambil data absensi HARI INI saja
         $attendances = \App\Models\Attendance::with('recorder')
-            ->whereIn('student_nis', $students->pluck('nis'))
+            ->whereIn('student_id', $students->pluck('id'))
             ->where('date', $today)
             ->get()
-            ->keyBy('student_nis');
+            ->keyBy('student_id');
 
         // Hitung rekap kehadiran hari ini
         $recap = [
@@ -165,7 +303,7 @@ class AttendanceController extends Controller
 
         // Ambil data absensi terakhir yang diupdate hari ini
         $lastUpdate = \App\Models\Attendance::with('recorder')
-            ->whereIn('student_nis', $students->pluck('nis'))
+            ->whereIn('student_id', $students->pluck('id'))
             ->where('date', $today)
             ->latest('updated_at')
             ->first();
@@ -179,7 +317,7 @@ class AttendanceController extends Controller
     public function sekretarisStore(Request $request)
     {
         // Cari data diri sekretaris
-        $sekretaris = \App\Models\Student::where('nis', auth()->user()->nis)->first();
+        $sekretaris = \App\Models\Student::where('nis', Auth::user()->nis)->first();
 
         if (!$sekretaris) {
             return redirect()->route('sekretaris.dashboard')
@@ -190,6 +328,7 @@ class AttendanceController extends Controller
         $request->validate([
             'attendances' => 'required|array',
             'attendances.*.status' => 'required|in:Hadir,Sakit,Izin,Alpa',
+            'attendances.*.keterangan' => 'nullable|string|max:255',
         ]);
 
         // Tanggal di-hardcode (hari ini)
@@ -201,16 +340,17 @@ class AttendanceController extends Controller
         $academicYearId = $classroom->academic_year_id;
 
         // Looping untuk setiap siswa dan simpan/update absensi
-        foreach ($attendanceData as $studentNis => $data) {
+        foreach ($attendanceData as $studentId => $data) {
             \App\Models\Attendance::updateOrCreate(
                 [
-                    'student_nis' => $studentNis,
+                    'student_id' => $studentId,
                     'date' => $date,
                 ],
                 [
                     'status' => $data['status'],
+                    'keterangan' => $data['keterangan'] ?? null,
                     'academic_year_id' => $academicYearId,
-                    'recorded_by' => auth()->id(),
+                    'recorded_by_id' => Auth::id(),
                 ]
             );
         }
@@ -224,35 +364,28 @@ class AttendanceController extends Controller
      */
     public function rekapBulananSekretaris(Request $request)
     {
-        // Ambil parameter bulan dan tahun (default: bulan dan tahun saat ini)
+        $user = Auth::user();
+
+        if (! $this->canManageAsPengurus($user)) {
+            abort(403, 'UNAUTHORIZED ACTION.');
+        }
+
         $month = $request->input('month', date('m'));
         $year = $request->input('year', date('Y'));
 
-        // Cari data diri sekretaris di model Student menggunakan NIS
-        $sekretaris = \App\Models\Student::where('nis', auth()->user()->nis)->first();
+        $classroom = $this->findPengurusClassroom($user);
 
-        // Jika sekretaris tidak ditemukan di tabel students
-        if (!$sekretaris) {
-            return redirect()->route('sekretaris.dashboard')
-                ->with('error', 'Data siswa Anda tidak ditemukan. Silakan hubungi admin.');
-        }
-
-        // Dapatkan kelas dari sekretaris tersebut
-        $classroom = $sekretaris->classroom;
-
-        // Jika tidak ada kelas
         if (!$classroom) {
-            return redirect()->route('sekretaris.dashboard')
-                ->with('error', 'Anda belum terdaftar di kelas manapun. Silakan hubungi admin.');
+            return redirect()->route('pengurus.dashboard')
+                ->with('error', 'Anda belum ditugaskan ke kelas manapun. Silakan hubungi admin.');
         }
 
-        // Ambil siswa beserta absensi yang sudah difilter berdasarkan bulan dan tahun
         $students = $classroom->students()->with(['attendances' => function ($query) use ($month, $year) {
             $query->whereYear('date', $year)
                   ->whereMonth('date', $month);
         }])->orderBy('name', 'asc')->get();
 
-        return view('sekretaris.attendances.recap', compact('classroom', 'students', 'month', 'year'));
+        return view('pengurus.attendances.recap', compact('classroom', 'students', 'month', 'year'));
     }
 
     /**
@@ -264,64 +397,33 @@ class AttendanceController extends Controller
         $month = $request->input('month', date('m'));
         $year = $request->input('year', date('Y'));
 
-        // Cari kelas yang dimiliki wali kelas yang sedang login
-        $classroom = Classroom::where('user_id', Auth::id())->first();
+        $user = Auth::user();
+        $role = $user->role;
+
+        // Cari kelas berdasarkan role user login
+        if ($role === 'wali_kelas') {
+            $classroom = Classroom::where('wali_kelas_id', Auth::id())->first();
+        } elseif ($role === 'sekretaris') {
+            $classroom = Classroom::where('sekretaris_id', Auth::id())->first();
+        } else {
+            return redirect()->back()
+                ->with('error', 'Anda tidak memiliki akses ke fitur ini.');
+        }
 
         // Jika tidak ada kelas
         if (!$classroom) {
-            return redirect()->route('wali-kelas.dashboard')
-                ->with('error', 'Anda belum ditugaskan sebagai wali kelas.');
+            $dashboardRoute = $role === 'sekretaris' ? 'sekretaris.dashboard' : 'wali-kelas.dashboard';
+
+            return redirect()->route($dashboardRoute)
+                ->with('error', 'Anda belum ditugaskan ke kelas manapun.');
         }
 
-        // Ambil siswa beserta absensi yang sudah difilter berdasarkan bulan dan tahun
-        $students = $classroom->students()->with(['attendances' => function ($query) use ($month, $year) {
+        $data = $classroom->students()->with(['attendances' => function ($query) use ($month, $year) {
             $query->whereYear('date', $year)
                   ->whereMonth('date', $month);
         }])->orderBy('name', 'asc')->get();
 
-        // Nama bulan untuk filename
-        $monthNames = [
-            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
-            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
-            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
-        ];
-
-        $filename = 'Rekap_Absensi_' . str_replace(' ', '_', $classroom->name) . '_' . $monthNames[$month] . '_' . $year . '.csv';
-
-        // Set header untuk download CSV
-        header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-
-        // Buat output stream
-        $output = fopen('php://output', 'w');
-
-        // Tulis UTF-8 BOM agar Excel bisa baca karakter Indonesia
-        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
-
-        // Header CSV
-        fputcsv($output, ['No', 'NIS', 'Nama Siswa', 'Hadir', 'Izin', 'Sakit', 'Alpa']);
-
-        // Data siswa
-        $no = 1;
-        foreach ($students as $student) {
-            $totalHadir = $student->attendances->where('status', 'Hadir')->count();
-            $totalIzin = $student->attendances->where('status', 'Izin')->count();
-            $totalSakit = $student->attendances->where('status', 'Sakit')->count();
-            $totalAlpa = $student->attendances->where('status', 'Alpa')->count();
-
-            fputcsv($output, [
-                $no++,
-                $student->nis,
-                $student->name,
-                $totalHadir,
-                $totalIzin,
-                $totalSakit,
-                $totalAlpa
-            ]);
-        }
-
-        fclose($output);
-        exit;
+        return Excel::download(new AttendanceExport($data, $month, $year), 'Rekap_Absensi_SMA.xlsx');
     }
 
     /**
@@ -329,76 +431,67 @@ class AttendanceController extends Controller
      */
     public function exportExcelSekretaris(Request $request)
     {
-        // Ambil parameter bulan dan tahun (default: bulan dan tahun saat ini)
+        $user = Auth::user();
+
+        if (! $this->canManageAsPengurus($user)) {
+            abort(403, 'UNAUTHORIZED ACTION.');
+        }
+
         $month = $request->input('month', date('m'));
         $year = $request->input('year', date('Y'));
 
-        // Cari data diri sekretaris di model Student menggunakan NIS
-        $sekretaris = \App\Models\Student::where('nis', Auth::user()->nis)->first();
+        $classroom = $this->findPengurusClassroom($user);
 
-        // Jika sekretaris tidak ditemukan di tabel students
-        if (!$sekretaris) {
-            return redirect()->route('sekretaris.dashboard')
-                ->with('error', 'Data siswa Anda tidak ditemukan.');
-        }
-
-        // Dapatkan kelas dari sekretaris tersebut
-        $classroom = $sekretaris->classroom;
-
-        // Jika tidak ada kelas
         if (!$classroom) {
-            return redirect()->route('sekretaris.dashboard')
-                ->with('error', 'Anda belum terdaftar di kelas manapun.');
+            return redirect()->route('pengurus.dashboard')
+                ->with('error', 'Anda belum ditugaskan ke kelas manapun.');
         }
 
-        // Ambil siswa beserta absensi yang sudah difilter berdasarkan bulan dan tahun
-        $students = $classroom->students()->with(['attendances' => function ($query) use ($month, $year) {
+        $data = $classroom->students()->with(['attendances' => function ($query) use ($month, $year) {
             $query->whereYear('date', $year)
                   ->whereMonth('date', $month);
         }])->orderBy('name', 'asc')->get();
 
-        // Nama bulan untuk filename
-        $monthNames = [
-            '01' => 'Januari', '02' => 'Februari', '03' => 'Maret', '04' => 'April',
-            '05' => 'Mei', '06' => 'Juni', '07' => 'Juli', '08' => 'Agustus',
-            '09' => 'September', '10' => 'Oktober', '11' => 'November', '12' => 'Desember'
-        ];
+        return Excel::download(new AttendanceExport($data, $month, $year), 'Rekap_Absensi_SMA.xlsx');
+    }
 
-        $filename = 'Rekap_Absensi_' . str_replace(' ', '_', $classroom->name) . '_' . $monthNames[$month] . '_' . $year . '.csv';
-
-        // Set header untuk download CSV
-        header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-
-        // Buat output stream
-        $output = fopen('php://output', 'w');
-
-        // Tulis UTF-8 BOM agar Excel bisa baca karakter Indonesia
-        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
-
-        // Header CSV
-        fputcsv($output, ['No', 'NIS', 'Nama Siswa', 'Hadir', 'Izin', 'Sakit', 'Alpa']);
-
-        // Data siswa
-        $no = 1;
-        foreach ($students as $student) {
-            $totalHadir = $student->attendances->where('status', 'Hadir')->count();
-            $totalIzin = $student->attendances->where('status', 'Izin')->count();
-            $totalSakit = $student->attendances->where('status', 'Sakit')->count();
-            $totalAlpa = $student->attendances->where('status', 'Alpa')->count();
-
-            fputcsv($output, [
-                $no++,
-                $student->nis,
-                $student->name,
-                $totalHadir,
-                $totalIzin,
-                $totalSakit,
-                $totalAlpa
-            ]);
+    private function canManageAsPengurus($user): bool
+    {
+        if (in_array($user->role, ['sekretaris', 'ketua_kelas', 'pengurus'])) {
+            return true;
         }
 
-        fclose($output);
-        exit;
+        if ($user->role === 'siswa' && $user->id) {
+            return Classroom::where('ketua_id', $user->id)
+                ->orWhere('sekretaris_id', $user->id)
+                ->exists();
+        }
+
+        return false;
+    }
+
+    private function findPengurusClassroom($user): ?Classroom
+    {
+        $conditions = [];
+
+        if ($user->id) {
+            $conditions[] = ['column' => 'sekretaris_id', 'value' => $user->id];
+            $conditions[] = ['column' => 'ketua_id', 'value' => $user->id];
+        }
+
+        if (empty($conditions)) {
+            return null;
+        }
+
+        $clauses = $conditions;
+
+        return Classroom::where(function ($query) use ($clauses) {
+            $first = array_shift($clauses);
+            $query->where($first['column'], $first['value']);
+
+            foreach ($clauses as $clause) {
+                $query->orWhere($clause['column'], $clause['value']);
+            }
+        })->with(['students', 'academicYear'])->first();
     }
 }

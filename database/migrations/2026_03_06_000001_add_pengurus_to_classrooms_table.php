@@ -12,18 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('classrooms', function (Blueprint $table) {
-            $table->string('ketua_nis')->nullable();
-            $table->string('sekretaris_nis')->nullable();
-            
-            $table->foreign('ketua_nis')
-                  ->references('nis')
-                  ->on('students')
-                  ->onDelete('set null');
-                  
-            $table->foreign('sekretaris_nis')
-                  ->references('nis')
-                  ->on('students')
-                  ->onDelete('set null');
+            $table->foreignId('ketua_id')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('sekretaris_id')->nullable()->constrained('users')->nullOnDelete();
         });
     }
 
@@ -33,9 +23,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('classrooms', function (Blueprint $table) {
-            $table->dropForeign(['ketua_nis']);
-            $table->dropForeign(['sekretaris_nis']);
-            $table->dropColumn(['ketua_nis', 'sekretaris_nis']);
+            $table->dropForeign(['ketua_id']);
+            $table->dropForeign(['sekretaris_id']);
+            $table->dropColumn(['ketua_id', 'sekretaris_id']);
         });
     }
 };

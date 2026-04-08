@@ -13,7 +13,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::paginate(10);
+        $users = User::whereIn('role', ['admin', 'guru', 'wali_kelas'])->paginate(10);
         return view('admin.users.index', compact('users'));
     }
 
@@ -31,10 +31,11 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
+            'nip'      => 'nullable|string|max:30|unique:users,nip',
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8',
-            'role' => 'required|in:admin,wali_kelas',
+            'role'     => 'required|in:admin,wali_kelas',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
@@ -43,14 +44,6 @@ class UserController extends Controller
 
         return redirect()->route('users.index')
             ->with('success', 'User berhasil ditambahkan!');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(User $user)
-    {
-        return view('admin.users.show', compact('user'));
     }
 
     /**
@@ -67,10 +60,11 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'nip'      => 'nullable|string|max:30|unique:users,nip,' . $user->id,
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8',
-            'role' => 'required|in:admin,wali_kelas',
+            'role'     => 'required|in:admin,wali_kelas',
         ]);
 
         // Jika password diisi, hash dan update. Jika kosong, hapus dari array validated

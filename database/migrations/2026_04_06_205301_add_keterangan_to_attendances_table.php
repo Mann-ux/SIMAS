@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('students', function (Blueprint $table) {
-            $table->id();
-            $table->string('nis')->unique();
-            $table->string('name');
-            $table->foreignId('classroom_id')->nullable()->constrained('classrooms')->nullOnDelete();
-            $table->timestamps();
+        Schema::table('attendances', function (Blueprint $table) {
+            // Menambahkan kolom keterangan setelah kolom status, boleh kosong (nullable)
+            $table->string('keterangan')->nullable()->after('status');
         });
     }
 
@@ -25,6 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('students');
+        Schema::table('attendances', function (Blueprint $table) {
+            $table->dropColumn('keterangan');
+        });
     }
 };

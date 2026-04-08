@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Services\SmartRedirectService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,24 +23,16 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(LoginRequest $request, SmartRedirectService $smartRedirect): RedirectResponse
     {
         $request->authenticate();
 
         $request->session()->regenerate();
 
         $user = $request->user();
+        $routeName = $smartRedirect->getRedirectRouteName($user);
 
-        // Redirect berdasarkan role
-        if ($user->role === 'admin') {
-            return redirect()->route('admin.dashboard');
-        } elseif ($user->role === 'wali_kelas') {
-            return redirect()->route('wali-kelas.dashboard');
-        } elseif ($user->role === 'sekretaris' || $user->role === 'ketua_kelas') {
-            return redirect()->route('pengurus.dashboard');
-        }
-
-        return redirect()->route('dashboard');
+        return redirect()->route($routeName);
     }
 
     /**
