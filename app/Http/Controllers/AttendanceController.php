@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\AttendanceExport;
+use App\Exports\MasterAttendanceExport;
 use App\Models\Attendance;
 use App\Models\Classroom;
 use Carbon\Carbon;
@@ -12,6 +13,21 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class AttendanceController extends Controller
 {
+    /**
+     * Export Excel Multi-Sheet (Admin) berdasarkan filter periode, tingkat, dan rombel.
+     */
+    public function exportExcelAdmin(Request $request)
+    {
+        $periode = $request->input('periode', now()->format('Y-m'));
+        $tingkat = $request->input('tingkat', 'all');
+        $rombel = $request->input('rombel', 'all');
+
+        return Excel::download(
+            new MasterAttendanceExport($periode, $tingkat, $rombel),
+            'Rekap_Absensi_Lengkap.xlsx'
+        );
+    }
+
     /**
      * Show dashboard overview for class pengurus (ketua/sekretaris).
      */
@@ -137,7 +153,12 @@ class AttendanceController extends Controller
         // Determine view based on role
         $view = $isWali ? 'wali-kelas.attendances.create' : 'pengurus.attendances.create';
 
-        $data = compact('classroom', 'students', 'attendances', 'recap', 'lastUpdate', 'isGuruWali', 'isPetugasKelas', 'petugasName');
+        $settings = \App\Models\Setting::whereIn('key', ['latitude_sekolah', 'longitude_sekolah', 'radius_meter'])->pluck('value', 'key')->toArray();
+        $setting_latitude = $settings['latitude_sekolah'] ?? '-6.538249';
+        $setting_longitude = $settings['longitude_sekolah'] ?? '110.752525';
+        $setting_radius = $settings['radius_meter'] ?? '50';
+
+        $data = compact('classroom', 'students', 'attendances', 'recap', 'lastUpdate', 'isGuruWali', 'isPetugasKelas', 'petugasName', 'setting_latitude', 'setting_longitude', 'setting_radius');
         if ($isWali) {
             $data['date'] = $date;
         } else {
@@ -160,6 +181,8 @@ class AttendanceController extends Controller
             'attendances' => 'required|array',
             'attendances.*.status' => 'required|in:Hadir,Sakit,Izin,Alpa',
             'attendances.*.keterangan' => 'nullable|string|max:255',
+            'latitude' => 'nullable|string',
+            'longitude' => 'nullable|string',
         ];
 
         // Tambahkan validasi date jika wali_kelas
@@ -201,6 +224,8 @@ class AttendanceController extends Controller
                     'keterangan' => $data['keterangan'] ?? null,
                     'academic_year_id' => $academicYearId,
                     'recorded_by_id' => Auth::id(),
+                    'latitude' => $request->latitude,
+                    'longitude' => $request->longitude,
                 ]
             );
         }
@@ -329,6 +354,8 @@ class AttendanceController extends Controller
             'attendances' => 'required|array',
             'attendances.*.status' => 'required|in:Hadir,Sakit,Izin,Alpa',
             'attendances.*.keterangan' => 'nullable|string|max:255',
+            'latitude' => 'nullable|string',
+            'longitude' => 'nullable|string',
         ]);
 
         // Tanggal di-hardcode (hari ini)
@@ -351,6 +378,8 @@ class AttendanceController extends Controller
                     'keterangan' => $data['keterangan'] ?? null,
                     'academic_year_id' => $academicYearId,
                     'recorded_by_id' => Auth::id(),
+                    'latitude' => $request->latitude,
+                    'longitude' => $request->longitude,
                 ]
             );
         }

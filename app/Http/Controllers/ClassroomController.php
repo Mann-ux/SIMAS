@@ -19,9 +19,10 @@ class ClassroomController extends Controller
     {
         $classrooms = Classroom::with('user')
             ->withCount('students')
+            ->where('status', 1)
             ->orderBy('name', 'asc')
             ->get();
-        
+
         return view('admin.classrooms.index', compact('classrooms'));
     }
 
@@ -30,8 +31,32 @@ class ClassroomController extends Controller
      */
     public function create()
     {
-        $gurus = User::where('role', 'wali_kelas')->orderBy('name', 'asc')->get();
-        return view('admin.classrooms.create', compact('gurus'));
+        // Get wali kelas IDs that are already used in active classrooms
+        $usedWaliKelasIds = Classroom::where('status', 1)
+            ->whereNotNull('wali_kelas_id')
+            ->pluck('wali_kelas_id');
+
+        // Get only teachers who are not currently assigned as active wali kelas
+        $gurus = User::where('role', 'wali_kelas')
+            ->whereNotIn('id', $usedWaliKelasIds)
+            ->orderBy('name', 'asc')
+            ->get();
+
+        // Get active classes to prevent duplicate tingkat + rombel combinations
+        $activeClasses = Classroom::where('status', 1)->get(['tingkat', 'name']);
+        
+        $existingClasses = $activeClasses->map(function ($cls) {
+            $parts = explode('-', $cls->name);
+            $rombel = isset($parts[1]) ? $parts[1] : '';
+            return [
+                'tingkat' => $cls->tingkat,
+                'rombel' => $rombel,
+            ];
+        })->filter(function ($item) {
+            return !empty($item['rombel']);
+        })->values();
+
+        return view('admin.classrooms.create', compact('gurus', 'existingClasses'));
     }
 
     /**
@@ -65,8 +90,15 @@ class ClassroomController extends Controller
             'wali_kelas_id'    => $request->wali_kelas_id,
         ]);
 
+        $successMessage = 'Kelas ' . $name . ' berhasil ditambahkan!';
+
+        if ($request->action === 'save_and_add') {
+            return redirect()->route('classrooms.create')
+                ->with('success', $successMessage . ' Silakan tambah kelas berikutnya.');
+        }
+
         return redirect()->route('classrooms.index')
-            ->with('success', 'Kelas ' . $name . ' berhasil ditambahkan!');
+            ->with('success', $successMessage);
     }
 
     /**
@@ -213,10 +245,10 @@ class ClassroomController extends Controller
      */
     public function destroy(Classroom $classroom)
     {
-        $classroom->delete();
+        $classroom->update(['status' => 0]);
 
         return redirect()->route('classrooms.index')
-            ->with('success', 'Kelas berhasil dihapus!');
+            ->with('success', 'Kelas "' . $classroom->name . '" berhasil diarsipkan.');
     }
 
     /**

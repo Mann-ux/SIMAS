@@ -7,9 +7,19 @@
     <title>@yield('title', 'Wali Kelas Dashboard') — SIMAS</title>
     <meta name="description" content="Panel wali kelas SIMAS untuk mengelola absensi dan rekap kehadiran siswa.">
 
+    {{-- ─── PWA Support ─────────────────────────────────────────────────────── --}}
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SIMAS">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -50,10 +60,8 @@
             {{-- ── Kiri: Logo + Menu Desktop ──────────────── --}}
             <div class="flex items-center gap-8">
                 {{-- Logo --}}
-                <a href="{{ route('wali-kelas.dashboard') }}" class="flex items-center gap-2 font-manrope text-2xl font-extrabold tracking-tighter text-[#00236f]" aria-label="SIMAS Home">
-                    <svg class="w-8 h-8 text-[#00236f]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222"></path>
-                    </svg>
+                <a href="{{ route('wali-kelas.dashboard') }}" class="flex items-center gap-2 font-manrope text-2xl font-extrabold tracking-tighter text-blue-900" aria-label="SIMAS Home">
+                    <span class="material-symbols-outlined text-blue-900 text-3xl leading-none">school</span>
                     SIMAS
                 </a>
 
@@ -95,8 +103,16 @@
                             WALI KELAS
                         </span>
                     </div>
-                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </div>
+
+                <form method="POST" action="{{ route('logout') }}" class="block md:hidden">
+                    @csrf
+                    <button type="submit" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" aria-label="Keluar" title="Keluar">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                        </svg>
+                    </button>
+                </form>
 
                 {{-- Separator --}}
                 <div class="hidden md:block w-px h-8 bg-slate-200"></div>
@@ -176,7 +192,7 @@
      ══════════════════════════════════════════════ --}}
 <div class="min-h-screen bg-slate-100 flex flex-col">
     <main class="flex-1 w-full pb-24 md:pb-6" role="main" id="main-content-wk">
-        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 py-6 lg:py-8">
+        <div class="w-full max-w-[1440px] mx-auto px-4 md:px-10 py-8">
 
             {{-- Flash Messages --}}
             @if(session('success'))
@@ -205,7 +221,7 @@
     {{-- Footer --}}
     <footer class="bg-white/60 border-t border-slate-200/50" role="contentinfo">
         <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-10 py-4 flex items-center justify-between gap-4">
-            <p class="text-xs text-slate-400">&copy; {{ date('Y') }} SIMAS — Sistem Informasi Manajemen Absensi Sekolah</p>
+            <p class="text-xs text-slate-400">&copy; {{ date('Y') }} SIMAS — Sistem Manajemen Absensi Sekolah</p>
             <p class="text-xs text-slate-400">v1.0.0</p>
         </div>
     </footer>
@@ -266,5 +282,16 @@
 </nav>
 
 @stack('scripts')
+
+{{-- ─── PWA Service Worker Registration ─────────────────────────────────── --}}
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register('/sw.js')
+                .then(function (reg) { console.log('[PWA] SW registered:', reg.scope); })
+                .catch(function (err) { console.warn('[PWA] SW registration failed:', err); });
+        });
+    }
+</script>
 </body>
 </html>

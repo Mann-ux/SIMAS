@@ -6,305 +6,488 @@
 @section('page-description', 'Input kehadiran siswa untuk tanggal terpilih')
 
 @section('content')
-<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="w-full">
 
-    {{-- ── Header & Date Picker ── --}}
-    <div class="mb-8 flex items-end justify-between flex-wrap gap-4">
-        <div>
-            <h1 class="text-3xl font-extrabold font-headline tracking-tight text-blue-900">Input Absensi Harian</h1>
-            <div class="flex items-center flex-wrap gap-3 mt-2">
-                <p class="text-slate-500 font-medium">{{ \Carbon\Carbon::parse($date)->locale('id')->isoFormat('dddd, D MMMM YYYY') }} - {{ $classroom->name }}</p>
-                
+        {{-- ── Header & Date Picker ── --}}
+        <div class="mb-8">
+            <div>
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="w-10 h-[3px] bg-blue-900 rounded-full"></span>
+                    <span class="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">MANAJEMEN KEHADIRAN</span>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-extrabold text-blue-900">Input Absensi Harian</h1>
+                <p class="mt-2 text-sm md:text-base text-gray-500 max-w-2xl">Kelola kehadiran siswa untuk tanggal yang
+                    dipilih secara akurat dan konsisten.</p>
+            </div>
+
+            <div class="mt-8 flex flex-wrap items-center gap-4">
+                <p class="text-slate-500 font-medium">
+                    {{ \Carbon\Carbon::parse($date)->locale('id')->isoFormat('dddd, D MMMM YYYY') }} -
+                    {{ $classroom->name }}</p>
+
                 {{-- Form Date Picker --}}
                 <form method="GET" action="{{ route('wali-kelas.absen.create') }}" class="flex items-center gap-2">
-                    <input type="date" name="date" value="{{ $date }}" max="{{ now()->toDateString() }}" class="px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:ring-blue-900 focus:border-blue-900 text-slate-700 font-medium outline-none">
-                    <button type="submit" class="px-4 py-1.5 text-sm font-bold bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition-colors">Ganti Tanggal</button>
+                    <input type="date" name="date" value="{{ $date }}" max="{{ now()->toDateString() }}"
+                        class="px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:ring-blue-900 focus:border-blue-900 text-slate-700 font-medium outline-none">
+                    <button type="submit"
+                        class="px-4 py-1.5 text-sm font-bold bg-blue-900 text-white rounded-lg hover:bg-blue-800 transition-colors">Ganti
+                        Tanggal</button>
                 </form>
             </div>
         </div>
-    </div>
-    
-    @if($date != now()->toDateString())
-    <div class="mb-6 flex items-start gap-3 bg-amber-50 text-amber-800 text-sm rounded-xl px-5 py-4 border border-amber-200">
-        <svg class="w-5 h-5 text-amber-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-        <p>Anda sedang melihat/mengedit absensi tanggal <strong>{{ date('d F Y', strtotime($date)) }}</strong> (bukan hari ini).</p>
-    </div>
-    @endif
 
-    @if($students->isNotEmpty())
-    {{-- Live Search Bar --}}
-    <div class="mb-6 bg-white rounded-xl border border-slate-200 shadow-sm p-2 flex items-center gap-2">
-        <svg class="w-5 h-5 text-slate-400 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-        <input type="text" id="searchInput" placeholder="Cari Nama Siswa..." class="w-full px-2 py-1.5 text-sm outline-none text-slate-700 bg-transparent">
-    </div>
-    @endif
-
-    {{-- ── Main Card ── --}}
-    <div class="bg-white shadow-sm rounded-xl border border-slate-200 overflow-hidden">
-        
-        {{-- Info Alert --}}
-        @if($lastUpdate)
-            <div class="m-6 mb-2 flex items-start gap-3 bg-blue-50 border border-blue-100 text-blue-800 text-sm rounded-xl px-5 py-4">
-                <svg class="w-5 h-5 text-blue-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <p>
-                    Absensi terakhir diperbarui oleh&nbsp;
-                    @if($isGuruWali)
-                        <strong>Guru Wali</strong>
-                    @elseif($isPetugasKelas && $petugasName)
-                        <strong>{{ $petugasName }}</strong>
-                    @else
-                        <strong>Petugas Kelas</strong>
-                    @endif
-                    &nbsp;pada <strong>{{ $lastUpdate->updated_at->format('H:i') }} WIB</strong>.
-                </p>
-            </div>
-        @else
-            <div class="m-6 mb-2 flex items-start gap-3 bg-amber-50 border border-amber-100 text-amber-800 text-sm rounded-xl px-5 py-4">
-                <svg class="w-5 h-5 text-amber-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <p>Belum ada data absensi untuk tanggal ini. Silakan input absensi untuk semua siswa.</p>
+        @if($date != now()->toDateString())
+            <div
+                class="mb-6 flex items-start gap-3 bg-amber-50 text-amber-800 text-sm rounded-xl px-5 py-4 border border-amber-200">
+                <svg class="w-5 h-5 text-amber-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z">
+                    </path>
+                </svg>
+                <p>Anda sedang melihat/mengedit absensi tanggal <strong>{{ date('d F Y', strtotime($date)) }}</strong> (bukan
+                    hari ini).</p>
             </div>
         @endif
 
-        {{-- Form --}}
-        <form action="{{ route('wali-kelas.absen.store') }}" method="POST" id="attendanceForm">
-            @csrf
-            <input type="hidden" name="date" value="{{ $date }}">
+        @if($students->isNotEmpty())
+            {{-- Live Search Bar --}}
+            <div class="mb-6 bg-white rounded-xl border border-slate-200 shadow-sm p-2 flex items-center gap-2">
+                <svg class="w-5 h-5 text-slate-400 ml-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <input type="text" id="searchInput" placeholder="Cari Nama Siswa..."
+                    class="w-full px-2 py-1.5 text-sm outline-none text-slate-700 bg-transparent">
+            </div>
+        @endif
 
-            <div class="p-6 pt-2">
-            @if($students->isEmpty())
-                <div class="text-center py-14 text-gray-400">
-                    <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+        {{-- ── Main Card ── --}}
+        <div class="bg-white shadow-sm rounded-xl border border-slate-200 overflow-hidden">
+
+            {{-- Info Alert --}}
+            @if($lastUpdate)
+                <div
+                    class="m-6 mb-2 flex items-start gap-3 bg-blue-50 border border-blue-100 text-blue-800 text-sm rounded-xl px-5 py-4">
+                    <svg class="w-5 h-5 text-blue-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <p class="font-medium text-gray-500">Belum ada siswa di kelas ini</p>
-                    <p class="text-sm mt-1">Silakan tambahkan siswa terlebih dahulu</p>
+                    <p>
+                        Absensi terakhir diperbarui oleh&nbsp;
+                        @if($isGuruWali)
+                            <strong>Guru Wali</strong>
+                        @elseif($isPetugasKelas && $petugasName)
+                            <strong>{{ $petugasName }}</strong>
+                        @else
+                            <strong>Petugas Kelas</strong>
+                        @endif
+                        &nbsp;pada <strong>{{ $lastUpdate->updated_at->format('H:i') }} WIB</strong>.
+                    </p>
                 </div>
             @else
-                {{-- Table --}}
-                <div class="overflow-x-auto no-scrollbar rounded-xl border border-slate-200">
-                    {{-- Ringkasan Absensi --}}
-                    <div class="bg-slate-50 py-3 px-4 border-b border-gray-200 flex justify-start items-center">
-                        <div class="text-sm font-medium text-slate-600 flex items-center gap-3">
-                            <span>Total Hadir: <span class="font-bold text-emerald-500">{{ $recap['Hadir'] ?? 0 }}</span></span>
-                            <span class="text-gray-300">&bull;</span>
-                            <span>Izin: <span class="font-bold text-blue-500">{{ $recap['Izin'] ?? 0 }}</span></span>
-                            <span class="text-gray-300">&bull;</span>
-                            <span>Sakit: <span class="font-bold text-amber-500">{{ $recap['Sakit'] ?? 0 }}</span></span>
-                            <span class="text-gray-300">&bull;</span>
-                            <span>Alpa: <span class="font-bold text-red-500">{{ $recap['Alpa'] ?? 0 }}</span></span>
+                <div
+                    class="m-6 mb-2 flex items-start gap-3 bg-amber-50 border border-amber-100 text-amber-800 text-sm rounded-xl px-5 py-4">
+                    <svg class="w-5 h-5 text-amber-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p>Belum ada data absensi untuk tanggal ini. Silakan input absensi untuk semua siswa.</p>
+                </div>
+            @endif
+
+            {{-- Form --}}
+            <form action="{{ route('wali-kelas.absen.store') }}" method="POST" id="attendanceForm">
+                @csrf
+                <input type="hidden" name="date" value="{{ $date }}">
+                {{-- Hidden Geofencing Inputs --}}
+                <input type="hidden" name="latitude" id="latInput">
+                <input type="hidden" name="longitude" id="lngInput">
+
+                <div class="p-6 pt-2">
+                    @if($students->isEmpty())
+                        <div class="text-center py-14 text-gray-400">
+                            <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                            <p class="font-medium text-gray-500">Belum ada siswa di kelas ini</p>
+                            <p class="text-sm mt-1">Silakan tambahkan siswa terlebih dahulu</p>
+                        </div>
+                    @else
+                        {{-- Table --}}
+                        <div class="overflow-x-auto no-scrollbar rounded-xl border border-slate-200">
+                            {{-- Ringkasan Absensi --}}
+                            <div class="bg-slate-50 py-3 px-4 border-b border-gray-200 flex justify-start items-center">
+                                <div class="text-sm font-medium text-slate-600 flex items-center gap-3">
+                                    <span>Total Hadir: <span
+                                            class="font-bold text-emerald-500">{{ $recap['Hadir'] ?? 0 }}</span></span>
+                                    <span class="text-gray-300">&bull;</span>
+                                    <span>Izin: <span class="font-bold text-blue-500">{{ $recap['Izin'] ?? 0 }}</span></span>
+                                    <span class="text-gray-300">&bull;</span>
+                                    <span>Sakit: <span class="font-bold text-amber-500">{{ $recap['Sakit'] ?? 0 }}</span></span>
+                                    <span class="text-gray-300">&bull;</span>
+                                    <span>Alpa: <span class="font-bold text-red-500">{{ $recap['Alpa'] ?? 0 }}</span></span>
+                                </div>
+                            </div>
+                            <table class="w-full border-collapse">
+                                <thead class="sticky top-0 z-10 shadow-sm border-b border-gray-300">
+                                    <tr>
+                                        <th
+                                            class="bg-white text-left py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-12">
+                                            No</th>
+                                        <th
+                                            class="bg-white text-left py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                            Nama Siswa (NIS)</th>
+                                        <th
+                                            class="bg-white text-center py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                            Status Kehadiran</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-300">
+                                    @foreach($students as $index => $student)
+                                        <tr class="student-row hover:bg-gray-50 transition-colors"
+                                            data-name="{{ strtolower($student->name) }}">
+                                            <td class="py-4 px-4 text-sm font-medium text-slate-400">
+                                                {{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</td>
+                                            <td class="py-4 px-4">
+                                                <div>
+                                                    <div class="flex items-center gap-2">
+                                                        <p class="font-bold text-slate-900 text-sm">{{ $student->name }}</p>
+                                                        @if($student->jenis_kelamin === 'L')
+                                                            <span
+                                                                class="bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">L</span>
+                                                        @elseif($student->jenis_kelamin === 'P')
+                                                            <span
+                                                                class="bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">P</span>
+                                                        @else
+                                                            <span
+                                                                class="bg-slate-50 text-slate-600 border border-slate-200 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">-</span>
+                                                        @endif
+                                                    </div>
+                                                    <p class="text-xs text-gray-500">{{ $student->nis }}</p>
+                                                </div>
+                                            </td>
+                                            <td class="py-4 px-4 align-top">
+                                                @php
+                                                    $attendanceRecord = $attendances[$student->id] ?? null;
+                                                    $status = $attendanceRecord ? $attendanceRecord->status : 'Hadir';
+                                                    $ket = $attendanceRecord ? $attendanceRecord->keterangan : '';
+                                                    $time = $attendanceRecord && $attendanceRecord->updated_at
+                                                        ? $attendanceRecord->updated_at->format('H:i')
+                                                        : ($attendanceRecord && $attendanceRecord->created_at ? $attendanceRecord->created_at->format('H:i') : '');
+                                                @endphp
+                                                <div class="flex flex-col w-full" x-data="{ 
+                                                        status: '{{ $status }}', 
+                                                        ket: '{{ addslashes($ket) }}', 
+                                                        time: '{{ $time }}',
+                                                        editing: {{ $ket ? 'false' : 'true' }}, 
+                                                        showKet() { return this.status === 'Sakit' || this.status === 'Izin'; }
+                                                     }">
+                                                    <div class="flex justify-center gap-2">
+                                                        <label class="cursor-pointer">
+                                                            <input type="radio" x-model="status" @change="if(!showKet()) ket = ''"
+                                                                name="attendances[{{ $student->id }}][status]" value="Hadir"
+                                                                class="hidden peer" required>
+                                                            <div
+                                                                class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 text-xs font-bold text-slate-400 transition-all peer-checked:text-white peer-checked:border-emerald-500 peer-checked:bg-emerald-500">
+                                                                H</div>
+                                                        </label>
+                                                        <label class="cursor-pointer">
+                                                            <input type="radio" x-model="status" @change="if(!showKet()) ket = ''"
+                                                                name="attendances[{{ $student->id }}][status]" value="Izin"
+                                                                class="hidden peer">
+                                                            <div
+                                                                class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 text-xs font-bold text-slate-400 transition-all peer-checked:text-white peer-checked:border-blue-500 peer-checked:bg-blue-500">
+                                                                I</div>
+                                                        </label>
+                                                        <label class="cursor-pointer">
+                                                            <input type="radio" x-model="status" @change="if(!showKet()) ket = ''"
+                                                                name="attendances[{{ $student->id }}][status]" value="Sakit"
+                                                                class="hidden peer">
+                                                            <div
+                                                                class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 text-xs font-bold text-slate-400 transition-all peer-checked:text-white peer-checked:border-amber-500 peer-checked:bg-amber-500">
+                                                                S</div>
+                                                        </label>
+                                                        <label class="cursor-pointer">
+                                                            <input type="radio" x-model="status" @change="if(!showKet()) ket = ''"
+                                                                name="attendances[{{ $student->id }}][status]" value="Alpa"
+                                                                class="hidden peer">
+                                                            <div
+                                                                class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 text-xs font-bold text-slate-400 transition-all peer-checked:text-white peer-checked:border-red-500 peer-checked:bg-red-500">
+                                                                A</div>
+                                                        </label>
+                                                    </div>
+
+                                                    <!-- Keterangan Inline Edit -->
+                                                    <div x-show="showKet()" style="display: none;" class="mt-2 text-center">
+
+                                                        <!-- View Mode (Label) -->
+                                                        <div x-show="!editing && ket.trim() !== ''"
+                                                            @click="editing = true; $nextTick(() => $refs.ketInput.focus())"
+                                                            class="cursor-pointer group flex items-center justify-center py-1 px-3 rounded-md hover:bg-slate-100 transition-colors max-w-[240px] mx-auto">
+                                                            <span class="text-xs text-slate-500 truncate max-w-full">
+                                                                <span class="font-medium text-slate-700 italic" x-text="ket"></span>
+                                                                <template x-if="time">
+                                                                    <span class="text-[11px] text-gray-400 ml-1 whitespace-nowrap"
+                                                                        x-text="' &bull; ' + time + ' WIB'"></span>
+                                                                </template>
+                                                            </span>
+                                                            <svg class="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 ml-1.5 transition-opacity shrink-0"
+                                                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                                    stroke-width="2"
+                                                                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z">
+                                                                </path>
+                                                            </svg>
+                                                        </div>
+
+                                                        <!-- Edit Mode (Input) -->
+                                                        <div x-show="editing || ket.trim() === ''"
+                                                            class="max-w-[200px] mx-auto relative px-2">
+                                                            <input type="text" x-ref="ketInput" x-model="ket"
+                                                                @blur="if(ket.trim() !== '') { editing = false; }"
+                                                                @keydown.enter.prevent="if(ket.trim() !== '') { editing = false; $el.blur() }"
+                                                                name="attendances[{{ $student->id }}][keterangan]"
+                                                                class="w-full text-[11px] border border-gray-200 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-slate-50 py-1 px-2 placeholder-slate-400 text-center"
+                                                                placeholder="Ketik lalu Enter...">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                    @endif
+                </div>
+
+                @if($students->isNotEmpty())
+                    {{-- Card Footer --}}
+                    <div class="bg-slate-50 px-6 py-5 border-t border-slate-200">
+                        {{-- Geofencing Info Panel --}}
+                        <div class="mb-4 flex flex-col items-end gap-0.5">
+                            <h3 id="distanceText" class="text-lg font-bold text-gray-700">📍 Menghitung jarak...</h3>
+                            <p id="statusText" class="text-sm font-semibold text-yellow-600 animate-pulse">Mencari sinyal GPS...
+                            </p>
+                            <p id="rawCoords" class="text-[10px] text-gray-400 mt-1 font-mono">Lat: -, Lng: -</p>
+                        </div>
+                        <div class="flex items-center justify-end gap-3">
+                            <button type="button" onclick="document.getElementById('attendanceForm').reset()"
+                                class="px-5 py-2 text-sm font-bold text-slate-500 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
+                                Reset
+                            </button>
+                            <button type="submit" id="btnSubmitAbsen" disabled
+                                class="text-white px-6 py-2 rounded-lg font-bold text-sm shadow-sm transition-all active:scale-95 bg-slate-400 opacity-60 cursor-not-allowed"
+                                style="cursor: not-allowed;">
+                                Simpan Absen
+                            </button>
                         </div>
                     </div>
-                    <table class="w-full border-collapse">
-                        <thead class="sticky top-0 z-10 shadow-sm border-b border-gray-300">
-                            <tr>
-                                <th class="bg-white text-left py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider w-12">No</th>
-                                <th class="bg-white text-left py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Siswa (NIS)</th>
-                                <th class="bg-white text-center py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status Kehadiran</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-300">
-                            @foreach($students as $index => $student)
-                            <tr class="student-row hover:bg-gray-50 transition-colors" data-name="{{ strtolower($student->name) }}">
-                                <td class="py-4 px-4 text-sm font-medium text-slate-400">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</td>
-                                <td class="py-4 px-4">
-                                    <div>
-                                        <p class="font-bold text-slate-900 text-sm">{{ $student->name }}</p>
-                                        <p class="text-xs text-gray-500">{{ $student->nis }}</p>
-                                    </div>
-                                </td>
-                                <td class="py-4 px-4 align-top">
-                                    @php
-                                        $attendanceRecord = $attendances[$student->id] ?? null;
-                                        $status = $attendanceRecord ? $attendanceRecord->status : 'Hadir';
-                                        $ket = $attendanceRecord ? $attendanceRecord->keterangan : '';
-                                        $time = $attendanceRecord && $attendanceRecord->updated_at 
-                                            ? $attendanceRecord->updated_at->format('H:i') 
-                                            : ($attendanceRecord && $attendanceRecord->created_at ? $attendanceRecord->created_at->format('H:i') : '');
-                                    @endphp
-                                    <div class="flex flex-col w-full"
-                                         x-data="{ 
-                                            status: '{{ $status }}', 
-                                            ket: '{{ addslashes($ket) }}', 
-                                            time: '{{ $time }}',
-                                            editing: {{ $ket ? 'false' : 'true' }}, 
-                                            showKet() { return this.status === 'Sakit' || this.status === 'Izin'; }
-                                         }">
-                                        <div class="flex justify-center gap-2">
-                                            <label class="cursor-pointer">
-                                                <input type="radio" x-model="status" @change="if(!showKet()) ket = ''" name="attendances[{{ $student->id }}][status]" value="Hadir" class="hidden peer" required>
-                                                <div class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 text-xs font-bold text-slate-400 transition-all peer-checked:text-white peer-checked:border-emerald-500 peer-checked:bg-emerald-500">H</div>
-                                            </label>
-                                            <label class="cursor-pointer">
-                                                <input type="radio" x-model="status" @change="if(!showKet()) ket = ''" name="attendances[{{ $student->id }}][status]" value="Izin" class="hidden peer">
-                                                <div class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 text-xs font-bold text-slate-400 transition-all peer-checked:text-white peer-checked:border-blue-500 peer-checked:bg-blue-500">I</div>
-                                            </label>
-                                            <label class="cursor-pointer">
-                                                <input type="radio" x-model="status" @change="if(!showKet()) ket = ''" name="attendances[{{ $student->id }}][status]" value="Sakit" class="hidden peer">
-                                                <div class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 text-xs font-bold text-slate-400 transition-all peer-checked:text-white peer-checked:border-amber-500 peer-checked:bg-amber-500">S</div>
-                                            </label>
-                                            <label class="cursor-pointer">
-                                                <input type="radio" x-model="status" @change="if(!showKet()) ket = ''" name="attendances[{{ $student->id }}][status]" value="Alpa" class="hidden peer">
-                                                <div class="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 text-xs font-bold text-slate-400 transition-all peer-checked:text-white peer-checked:border-red-500 peer-checked:bg-red-500">A</div>
-                                            </label>
-                                        </div>
-                                        
-                                        <!-- Keterangan Inline Edit -->
-                                        <div x-show="showKet()" style="display: none;" class="mt-2 text-center">
-                                            
-                                            <!-- View Mode (Label) -->
-                                            <div x-show="!editing && ket.trim() !== ''" 
-                                                 @click="editing = true; $nextTick(() => $refs.ketInput.focus())"
-                                                 class="cursor-pointer group flex items-center justify-center py-1 px-3 rounded-md hover:bg-slate-100 transition-colors max-w-[240px] mx-auto">
-                                                <span class="text-xs text-slate-500 truncate max-w-full">
-                                                    <span class="font-medium text-slate-700 italic" x-text="ket"></span>
-                                                    <template x-if="time">
-                                                        <span class="text-[11px] text-gray-400 ml-1 whitespace-nowrap" x-text="' &bull; ' + time + ' WIB'"></span>
-                                                    </template>
-                                                </span>
-                                                <svg class="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 ml-1.5 transition-opacity shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-                                                </svg>
-                                            </div>
-
-                                            <!-- Edit Mode (Input) -->
-                                            <div x-show="editing || ket.trim() === ''" class="max-w-[200px] mx-auto relative px-2">
-                                                <input type="text" 
-                                                       x-ref="ketInput"
-                                                       x-model="ket" 
-                                                       @blur="if(ket.trim() !== '') { editing = false; }" 
-                                                       @keydown.enter.prevent="if(ket.trim() !== '') { editing = false; $el.blur() }"
-                                                       name="attendances[{{ $student->id }}][keterangan]" 
-                                                       class="w-full text-[11px] border border-gray-200 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 bg-slate-50 py-1 px-2 placeholder-slate-400 text-center" 
-                                                       placeholder="Ketik lalu Enter...">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-
-            @endif
-            </div>
-
-            @if($students->isNotEmpty())
-            {{-- Card Footer --}}
-            <div class="bg-slate-50 px-6 py-4 flex items-center justify-end border-t border-slate-200">
-                <div class="flex items-center gap-3">
-                    <button type="button" onclick="document.getElementById('attendanceForm').reset()" class="px-5 py-2 text-sm font-bold text-slate-500 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-                        Reset
-                    </button>
-                    <button type="submit" class="text-white px-6 py-2 rounded-lg font-bold text-sm shadow-sm transition-all active:scale-95 bg-blue-900 hover:bg-blue-800">
-                        Simpan Absen
-                    </button>
-                </div>
-            </div>
-            @endif
-        </form>
-    </div>
-
-    {{-- Bottom Guidelines Info --}}
-    <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="p-5 rounded-xl border border-slate-200 shadow-sm flex gap-4 bg-blue-900">
-            <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-blue-800">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            </div>
-            <div>
-                <h3 class="text-sm font-bold text-white">Butuh Bantuan?</h3>
-                <p class="text-xs mt-1 leading-relaxed text-blue-100">Hubungi Operator Sekolah jika terdapat kesalahan data siswa atau NIS.</p>
-            </div>
+                @endif
+            </form>
         </div>
-        <div class="p-5 rounded-xl border border-slate-200 shadow-sm flex gap-4 bg-blue-900">
-            <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-blue-800">
-                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+
+        {{-- Bottom Guidelines Info --}}
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="p-5 rounded-xl border border-slate-200 shadow-sm flex gap-4 bg-blue-900">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-blue-800">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-white">Butuh Bantuan?</h3>
+                    <p class="text-xs mt-1 leading-relaxed text-blue-100">Hubungi Operator Sekolah jika terdapat kesalahan
+                        data siswa atau NIS.</p>
+                </div>
             </div>
-            <div>
-                <h3 class="text-sm font-bold text-white">Verifikasi Data</h3>
-                <p class="text-xs mt-1 leading-relaxed text-blue-100">Pastikan status kehadiran telah diisi dengan benar sebelum menyimpan absensi harian.</p>
+            <div class="p-5 rounded-xl border border-slate-200 shadow-sm flex gap-4 bg-blue-900">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-blue-800">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-sm font-bold text-white">Verifikasi Data</h3>
+                    <p class="text-xs mt-1 leading-relaxed text-blue-100">Pastikan status kehadiran telah diisi dengan benar
+                        sebelum menyimpan absensi harian.</p>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-@push('scripts')
-<script>
-    @if(session('success'))
-    Swal.fire({
-        icon: 'success',
-        title: 'Berhasil!',
-        text: '{{ session('success') }}',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#10B981',
-        timer: 3000,
-        buttonsStyling: false,
-        customClass: {
-            popup: 'bg-white rounded-2xl shadow-2xl border border-gray-100',
-            title: 'text-2xl font-bold text-gray-800',
-            htmlContainer: 'text-base text-gray-500 mt-2',
-            confirmButton: 'mt-4 bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95',
-            cancelButton: 'mt-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95 ml-2'
-        }
-    });
-    @endif
+    @push('scripts')
+        <script>
+            @if(session('success'))
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: '{{ session('success') }}',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#10B981',
+                    timer: 3000,
+                    buttonsStyling: false,
+                    customClass: {
+                        popup: 'bg-white rounded-2xl shadow-2xl border border-gray-100',
+                        title: 'text-2xl font-bold text-gray-800',
+                        htmlContainer: 'text-base text-gray-500 mt-2',
+                        confirmButton: 'mt-4 bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95',
+                        cancelButton: 'mt-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95 ml-2'
+                    }
+                });
+            @endif
 
-    @if(session('error'))
-    Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: '{{ session('error') }}',
-        confirmButtonText: 'OK',
-        confirmButtonColor: '#F43F5E',
-        buttonsStyling: false,
-        customClass: {
-            popup: 'bg-white rounded-2xl shadow-2xl border border-gray-100',
-            title: 'text-2xl font-bold text-gray-800',
-            htmlContainer: 'text-base text-gray-500 mt-2',
-            confirmButton: 'mt-4 bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95',
-            cancelButton: 'mt-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95 ml-2'
-        }
-    });
-    @endif
+            @if(session('error'))
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: '{{ session('error') }}',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#F43F5E',
+                    buttonsStyling: false,
+                    customClass: {
+                        popup: 'bg-white rounded-2xl shadow-2xl border border-gray-100',
+                        title: 'text-2xl font-bold text-gray-800',
+                        htmlContainer: 'text-base text-gray-500 mt-2',
+                        confirmButton: 'mt-4 bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95',
+                        cancelButton: 'mt-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95 ml-2'
+                    }
+                });
+            @endif
 
-    document.getElementById('attendanceForm').addEventListener('submit', function(e) {
-        const radios = document.querySelectorAll('input[type="radio"]:checked');
-        const totalStudents = {{ $students->count() }};
-        if (radios.length !== totalStudents && totalStudents > 0) {
-            e.preventDefault();
-            Swal.fire({
-                icon: 'warning',
-                title: 'Perhatian',
-                text: 'Mohon isi status kehadiran untuk semua siswa!',
-                confirmButtonText: 'OK',
-                confirmButtonColor: '#F59E0B',
-                buttonsStyling: false,
-                customClass: {
-                    popup: 'bg-white rounded-2xl shadow-2xl border border-gray-100',
-                    title: 'text-2xl font-bold text-gray-800',
-                    htmlContainer: 'text-base text-gray-500 mt-2',
-                    confirmButton: 'mt-4 bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95',
-                    cancelButton: 'mt-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95 ml-2'
-                }
-            });
-        }
-    });
+            // ── Geofencing Logic ───────────────────────────────────────────────────────
+            const SCHOOL_LAT = {{ $setting_latitude }};
+            const SCHOOL_LONG = {{ $setting_longitude }};
+            const MAX_RADIUS = {{ $setting_radius }}; // meter
 
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('input', function(e) {
-            const term = e.target.value.toLowerCase();
-            document.querySelectorAll('.student-row').forEach(row => {
-                const name = row.getAttribute('data-name');
-                if (name && name.includes(term)) {
-                    row.style.display = '';
+            /**
+             * Haversine formula — returns distance in whole meters.
+             */
+            function calculateDistance(lat1, lon1, lat2, lon2) {
+                const R = 6371000; // radius bumi dalam meter
+                const toRad = deg => deg * Math.PI / 180;
+                const dLat = toRad(lat2 - lat1);
+                const dLon = toRad(lon2 - lon1);
+                const a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                    + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2))
+                    * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                return Math.round(R * c);
+            }
+
+            let watchId;
+            const btnSubmit = document.getElementById('btnSubmitAbsen');
+            const distanceText = document.getElementById('distanceText');
+            const statusText = document.getElementById('statusText');
+            const rawCoords = document.getElementById('rawCoords');
+            const latInput = document.getElementById('latInput');
+            const lngInput = document.getElementById('lngInput');
+
+            function setButtonActive(active) {
+                if (active) {
+                    btnSubmit.removeAttribute('disabled');
+                    btnSubmit.classList.remove('bg-slate-400', 'opacity-60', 'cursor-not-allowed');
+                    btnSubmit.classList.add('bg-blue-900', 'hover:bg-blue-800', 'active:scale-95');
+                    btnSubmit.style.cursor = '';
                 } else {
-                    row.style.display = 'none';
+                    btnSubmit.setAttribute('disabled', true);
+                    btnSubmit.classList.add('bg-slate-400', 'opacity-60', 'cursor-not-allowed');
+                    btnSubmit.classList.remove('bg-blue-900', 'hover:bg-blue-800', 'active:scale-95');
+                    btnSubmit.style.cursor = 'not-allowed';
+                }
+            }
+
+            if (navigator.geolocation) {
+                watchId = navigator.geolocation.watchPosition(
+                    function success(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+
+                        // Update raw coords display
+                        rawCoords.textContent = `Lat: ${lat.toFixed(6)}, Lng: ${lng.toFixed(6)}`;
+
+                        // Populate hidden inputs
+                        latInput.value = lat;
+                        lngInput.value = lng;
+
+                        // Calculate distance
+                        const distance = calculateDistance(lat, lng, SCHOOL_LAT, SCHOOL_LONG);
+                        distanceText.textContent = `📍 Jarak Anda: ${distance} Meter`;
+
+                        if (distance <= MAX_RADIUS) {
+                            statusText.textContent = '✅ Anda berada di dalam area sekolah';
+                            statusText.className = 'text-sm font-semibold text-emerald-600';
+                            setButtonActive(true);
+                        } else {
+                            statusText.textContent = `❌ Anda di luar jangkauan (Maks ${MAX_RADIUS}m)`;
+                            statusText.className = 'text-sm font-semibold text-red-600';
+                            setButtonActive(false);
+                        }
+                    },
+                    function error(err) {
+                        statusText.textContent = '⚠️ Tolong izinkan akses lokasi (GPS) untuk absen';
+                        statusText.className = 'text-sm font-semibold text-red-700';
+                        distanceText.textContent = '📍 Lokasi tidak dapat dideteksi';
+                        rawCoords.textContent = 'Lat: -, Lng: -';
+                        setButtonActive(false);
+                    },
+                    { enableHighAccuracy: true, maximumAge: 0 }
+                );
+            } else {
+                statusText.textContent = '⚠️ Browser tidak mendukung Geolocation';
+                statusText.className = 'text-sm font-semibold text-red-700';
+            }
+
+            // Stop GPS watch on form submit to save battery
+            document.getElementById('attendanceForm').addEventListener('submit', function (e) {
+                if (watchId !== undefined) {
+                    navigator.geolocation.clearWatch(watchId);
+                }
+
+                const radios = document.querySelectorAll('input[type="radio"]:checked');
+                const totalStudents = {{ $students->count() }};
+                if (radios.length !== totalStudents && totalStudents > 0) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Perhatian',
+                        text: 'Mohon isi status kehadiran untuk semua siswa!',
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#F59E0B',
+                        buttonsStyling: false,
+                        customClass: {
+                            popup: 'bg-white rounded-2xl shadow-2xl border border-gray-100',
+                            title: 'text-2xl font-bold text-gray-800',
+                            htmlContainer: 'text-base text-gray-500 mt-2',
+                            confirmButton: 'mt-4 bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95',
+                            cancelButton: 'mt-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95 ml-2'
+                        }
+                    });
                 }
             });
-        });
-    }
+            // ── /Geofencing Logic ───────────────────────────────────────────────────────
 
-</script>
-@endpush
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', function (e) {
+                    const term = e.target.value.toLowerCase();
+                    document.querySelectorAll('.student-row').forEach(row => {
+                        const name = row.getAttribute('data-name');
+                        if (name && name.includes(term)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+        </script>
+    @endpush
 @endsection

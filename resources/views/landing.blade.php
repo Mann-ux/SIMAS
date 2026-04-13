@@ -1,5 +1,9 @@
 @extends('layouts.landing')
 
+@php
+    $settings = \App\Models\Setting::pluck('value', 'key')->toArray();
+@endphp
+
 {{-- ─── Per-page styles ──────────────────────────────────────────────────────── --}}
 @push('styles')
 <style>
@@ -56,32 +60,61 @@
 @section('content')
 
     {{-- ===== TOP APP BAR ===== --}}
-    <header id="main-header" class="fixed top-0 w-full z-50 flex justify-between items-center h-14 md:h-16 px-6 md:px-10"
+    <header id="main-header" x-data="{ mobileMenuOpen: false }" class="fixed top-0 w-full z-50"
             style="background-color: rgba(248,249,251,0.80); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);">
+        <div class="flex justify-between items-center h-14 md:h-16 px-6 md:px-10">
+            {{-- Brand: toga icon + SIMAS text --}}
+            <a href="#beranda" class="flex items-center gap-x-2">
+                <span class="material-symbols-outlined text-primary text-3xl leading-none" aria-hidden="true">school</span>
+                <span class="font-display font-extrabold text-primary tracking-tighter text-lg md:text-xl">SIMAS</span>
+            </a>
 
-        {{-- Brand: toga icon + SIMAS text --}}
-        <a href="#beranda" class="flex items-center gap-x-2">
-            <span class="material-symbols-outlined text-primary text-3xl leading-none" aria-hidden="true">school</span>
-            <span class="font-display font-extrabold text-primary tracking-tighter text-lg md:text-xl">SIMAS</span>
-        </a>
+            {{-- Desktop navigation — active state managed by Intersection Observer --}}
+            <nav class="hidden md:flex items-center space-x-8 font-sans text-sm font-medium" aria-label="Navigasi utama">
+                <a id="nav-beranda" href="#beranda"
+                   class="nav-link text-on_surface_variant hover:text-primary transition-colors">Beranda</a>
+                <a id="nav-kelas" href="#kelas"
+                   class="nav-link text-on_surface_variant hover:text-primary transition-colors">Kelas</a>
+                <a id="nav-kontak" href="#kontak"
+                   class="nav-link text-on_surface_variant hover:text-primary transition-colors">Kontak</a>
+            </nav>
 
-        {{-- Desktop navigation — active state managed by Intersection Observer --}}
-        <nav class="hidden md:flex items-center space-x-8 font-sans text-sm font-medium" aria-label="Navigasi utama">
-            <a id="nav-beranda" href="#beranda"
-               class="nav-link text-on_surface_variant hover:text-primary transition-colors">Beranda</a>
-            <a id="nav-kelas" href="#kelas"
-               class="nav-link text-on_surface_variant hover:text-primary transition-colors">Kelas</a>
-            <a id="nav-kontak" href="#kontak"
-               class="nav-link text-on_surface_variant hover:text-primary transition-colors">Kontak</a>
-        </nav>
+            {{-- Action Buttons --}}
+            <div class="flex items-center gap-3">
+                {{-- Login CTA --}}
+                <a href="{{ route('login') }}"
+                   id="btn-header-login"
+                   class="editorial-gradient text-on_primary flex items-center gap-2 px-4 py-2 md:px-6 md:py-2.5 rounded-xl font-sans text-xs md:text-sm font-semibold active:scale-95 transition-all shadow-sm">
+                    <span>Masuk</span>
+                    <span class="material-symbols-outlined text-base md:text-lg" aria-hidden="true">login</span>
+                </a>
 
-        {{-- Login CTA --}}
-        <a href="{{ route('login') }}"
-           id="btn-header-login"
-           class="editorial-gradient text-on_primary flex items-center gap-2 px-4 py-2 md:px-6 md:py-2.5 rounded-xl font-sans text-xs md:text-sm font-semibold active:scale-95 transition-all shadow-sm">
-            <span>Masuk</span>
-            <span class="material-symbols-outlined text-base md:text-lg" aria-hidden="true">login</span>
-        </a>
+                {{-- Hamburger Menu Button (Mobile Only) --}}
+                <button @click="mobileMenuOpen = !mobileMenuOpen"
+                        class="md:hidden flex items-center justify-center p-2 text-on_surface_variant hover:text-primary transition-colors rounded-lg bg-surface-container-low"
+                        aria-label="Toggle mobile menu">
+                    <span class="material-symbols-outlined" x-text="mobileMenuOpen ? 'close' : 'menu'" aria-hidden="true">menu</span>
+                </button>
+            </div>
+        </div>
+
+        {{-- Mobile Dropdown Menu --}}
+        <div x-show="mobileMenuOpen" 
+             style="display: none;"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 -translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-150"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 -translate-y-4"
+             class="md:hidden absolute top-full left-0 w-full bg-surface-container-lowest border-t border-outline_variant/30 shadow-lg"
+             @click.away="mobileMenuOpen = false">
+            <nav class="flex flex-col py-2 px-6" aria-label="Navigasi mobile">
+                <a href="#beranda" @click="mobileMenuOpen = false" class="py-4 font-sans font-medium text-base text-on_surface_variant hover:text-primary transition-colors border-b border-outline_variant/20">Beranda</a>
+                <a href="#kelas" @click="mobileMenuOpen = false" class="py-4 font-sans font-medium text-base text-on_surface_variant hover:text-primary transition-colors border-b border-outline_variant/20">Kelas</a>
+                <a href="#kontak" @click="mobileMenuOpen = false" class="py-4 font-sans font-medium text-base text-on_surface_variant hover:text-primary transition-colors">Kontak</a>
+            </nav>
+        </div>
     </header>
 
     <main class="pt-14 md:pt-16">
@@ -99,17 +132,17 @@
                 {{-- Badge --}}
                 <div class="inline-flex items-center px-3 md:px-4 py-1 md:py-1.5 rounded-full font-sans text-[10px] md:text-xs font-bold tracking-widest uppercase"
                      style="background-color: rgba(220,228,255,0.5); color: #00236f;">
-                    Sistem Informasi Manajemen Absensi
+                    {{ $settings['hero_kicker'] ?? 'SISTEM INFORMASI MANAJEMEN ABSENSI' }}
                 </div>
 
                 {{-- H1 --}}
                 <h1 class="font-display text-4xl md:text-5xl lg:text-7xl font-extrabold text-on_surface tracking-tight leading-tight md:leading-[1.1]">
-                    Sistem Absensi Sekolah
+                    {{ $settings['hero_headline'] ?? 'Sistem Pengelolaan Presensi Siswa' }}
                 </h1>
 
                 {{-- Subtitle --}}
                 <p class="text-on_surface_variant text-base md:text-xl lg:text-2xl font-sans leading-relaxed max-w-2xl mx-auto px-2">
-                    Kelola presensi siswa SMA dengan mudah, cepat, dan akurat dalam satu platform terintegrasi.
+                    {{ $settings['hero_subheadline'] ?? 'Kelola presensi siswa SMA dengan mudah, cepat, dan akurat dalam satu platform terintegrasi.' }}
                 </p>
 
                 {{-- CTA --}}
@@ -224,12 +257,24 @@
                 {{-- ── DESKTOP GRID (hidden on mobile) ── --}}
                 <div id="desktop-grid" class="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     @foreach ($classrooms as $classroom)
+                        @php
+                            // Default icon untuk Kelas X
+                            $classIcon = 'school';
+                            $className = \Illuminate\Support\Str::upper((string) ($classroom->name ?? ''));
+
+                            // Cek urutan dari yang paling panjang (XII) agar tidak tertimpa
+                            if (\Illuminate\Support\Str::contains($className, 'XII')) {
+                                $classIcon = 'history_edu';
+                            } elseif (\Illuminate\Support\Str::contains($className, 'XI')) {
+                                $classIcon = 'meeting_room';
+                            }
+                        @endphp
                         <div class="classroom-card group bg-surface-container-lowest p-8 rounded-3xl transition-all hover:bg-primary hover:-translate-y-2 duration-300 shadow-sm"
                              data-name="{{ strtolower($classroom->name) }}"
                              data-tingkat="{{ strtolower($classroom->tingkat ?? '') }}">
                             <div class="flex flex-col gap-6">
                                 <div class="w-14 h-14 rounded-2xl bg-surface-container-low flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                                    <span class="material-symbols-outlined text-primary group-hover:text-white text-3xl" aria-hidden="true">school</span>
+                                    <span class="material-symbols-outlined text-primary group-hover:text-white text-3xl" aria-hidden="true">{{ $classIcon }}</span>
                                 </div>
                                 <div class="flex flex-col gap-2">
                                     <h3 class="font-display text-2xl font-bold text-on_surface group-hover:text-white transition-colors">
@@ -259,13 +304,25 @@
                 {{-- ── MOBILE LIST (hidden on desktop) ── --}}
                 <div id="mobile-list" class="flex flex-col gap-4 md:hidden">
                     @foreach ($classrooms as $classroom)
+                        @php
+                            // Default icon untuk Kelas X
+                            $classIcon = 'school';
+                            $className = \Illuminate\Support\Str::upper((string) ($classroom->name ?? ''));
+
+                            // Cek urutan dari yang paling panjang (XII) agar tidak tertimpa
+                            if (\Illuminate\Support\Str::contains($className, 'XII')) {
+                                $classIcon = 'history_edu';
+                            } elseif (\Illuminate\Support\Str::contains($className, 'XI')) {
+                                $classIcon = 'meeting_room';
+                            }
+                        @endphp
                         <div class="classroom-card group bg-surface-container-lowest p-5 rounded-3xl transition-all hover:bg-primary duration-300 shadow-sm"
                              data-name="{{ strtolower($classroom->name) }}"
                              data-tingkat="{{ strtolower($classroom->tingkat ?? '') }}">
                             <div class="flex flex-col gap-4">
                                 {{-- Ikon toga — sama persis dengan desktop --}}
                                 <div class="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center group-hover:bg-white/10 transition-colors">
-                                    <span class="material-symbols-outlined text-primary group-hover:text-white text-2xl" aria-hidden="true">school</span>
+                                    <span class="material-symbols-outlined text-primary group-hover:text-white text-2xl" aria-hidden="true">{{ $classIcon }}</span>
                                 </div>
                                 {{-- Nama & chip siswa --}}
                                 <div class="flex flex-col gap-2">
@@ -311,23 +368,31 @@
                 role="contentinfo">
 
             {{-- Desktop: brand + kontak --}}
-            <div class="hidden md:grid md:grid-cols-3 gap-16">
+            <div class="hidden md:grid md:grid-cols-4 gap-16">
                 <div class="md:col-span-2 flex flex-col gap-6">
                     <div class="font-display text-3xl font-extrabold text-primary tracking-tighter">SIMAS</div>
                     <p class="text-on_surface_variant font-sans leading-relaxed max-w-sm">
-                        Menghadirkan transparansi dan akurasi dalam pengelolaan kehadiran siswa melalui teknologi editorial yang mutakhir.
+                        {{ $settings['footer_desc'] ?? 'Menghadirkan transparansi dan akurasi dalam pengelolaan kehadiran siswa melalui teknologi editorial yang mutakhir.' }}
                     </p>
+                </div>
+                <div class="flex flex-col gap-6">
+                    <h4 class="font-display font-bold text-on_surface tracking-tight">Tautan Cepat</h4>
+                    <ul class="flex flex-col gap-4 font-sans text-sm text-on_surface_variant">
+                        <li><a href="#" class="hover:text-primary transition-colors">Beranda</a></li>
+                        <li><a href="#kelas" class="hover:text-primary transition-colors">Cari &amp; Filter Kelas</a></li>
+                        <li><a href="{{ route('login') }}" class="hover:text-primary transition-colors">Masuk / Login Admin</a></li>
+                    </ul>
                 </div>
                 <div class="flex flex-col gap-6">
                     <h4 class="font-display font-bold text-on_surface tracking-tight">Kontak</h4>
                     <ul class="flex flex-col gap-4 font-sans text-sm text-on_surface_variant">
                         <li class="flex items-center gap-3">
                             <span class="material-symbols-outlined text-primary text-xl" aria-hidden="true">mail</span>
-                            info@simas.sch.id
+                            {{ $settings['footer_email'] ?? 'info@simas.sch.id' }}
                         </li>
                         <li class="flex items-center gap-3">
                             <span class="material-symbols-outlined text-primary text-xl" aria-hidden="true">location_on</span>
-                            Jepara, Indonesia
+                            {{ $settings['footer_address'] ?? 'Jepara, Indonesia' }}
                         </li>
                     </ul>
                 </div>
@@ -351,9 +416,18 @@
                 <p class="font-sans text-xs text-on_surface_variant text-center md:text-left">
                     &copy; {{ date('Y') }} SIMAS. Seluruh hak cipta dilindungi.
                 </p>
-                <div class="flex gap-8">
-                    <a href="#" class="font-sans text-xs text-on_surface_variant hover:text-primary transition-colors">Syarat &amp; Ketentuan</a>
-                    <a href="#" class="font-sans text-xs text-on_surface_variant hover:text-primary transition-colors">Keamanan Data</a>
+                <div class="flex items-center gap-6 md:gap-8">
+                    <div class="flex items-center gap-4">
+                        <a href="{{ $settings['social_instagram'] ?? '#' }}" target="_blank" rel="noopener noreferrer" class="text-on_surface_variant hover:text-primary transition-colors font-sans text-sm font-semibold">Instagram</a>
+                        <a href="{{ $settings['social_youtube'] ?? '#' }}" target="_blank" rel="noopener noreferrer" class="text-on_surface_variant hover:text-primary transition-colors font-sans text-sm font-semibold">YouTube</a>
+                    </div>
+                    
+                    <div class="hidden md:block w-px h-4 bg-[rgba(195,199,207,0.40)]"></div>
+                    
+                    <div class="flex items-center gap-4">
+                        <a href="#" class="font-sans text-xs text-on_surface_variant hover:text-primary transition-colors">Syarat &amp; Ketentuan</a>
+                        <a href="#" class="font-sans text-xs text-on_surface_variant hover:text-primary transition-colors">Keamanan Data</a>
+                    </div>
                 </div>
             </div>
         </footer>

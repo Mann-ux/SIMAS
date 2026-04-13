@@ -5,8 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     <title>@yield('title', 'Admin Dashboard') — SIMAS</title>
     <meta name="description" content="Panel administrator SIMAS untuk mengelola data sekolah, kelas, guru, dan siswa.">
+
+    {{-- ─── PWA Support ─────────────────────────────────────────────────────── --}}
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SIMAS">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
 
     {{-- ─── Google Fonts: Manrope (display) + Inter (body) ─────────────────── --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -65,8 +75,7 @@
         Solid primary (#00236f) command-center. No border separators.
         Depth via tonal contrast: primary vs surface (body bg).
         ═══════════════════════════════════════════════════════════════════════ --}}
-        <aside id="sidebar"
-            class="fixed md:static inset-y-0 left-0 w-72 bg-primary flex-shrink-0 flex flex-col overflow-hidden
+        <aside id="sidebar" class="fixed md:static inset-y-0 left-0 w-72 bg-primary flex-shrink-0 flex flex-col overflow-hidden
                    transform transition-transform duration-300 ease-in-out -translate-x-full md:translate-x-0 z-50"
             aria-label="Sidebar navigasi admin">
             {{-- Brand Header --}}
@@ -147,6 +156,36 @@
                     </svg>
                     <span class="text-label-md font-medium">Kelola Siswa</span>
                 </a>
+
+                {{-- Mutasi Kelas --}}
+                <a href="{{ route('admin.mutasi.index') }}" id="nav-admin-mutasi" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl
+                      {{ request()->routeIs('admin.mutasi.*')
+    ? 'bg-white/20 text-on_primary'
+    : 'text-on_primary_container hover:bg-white/10 hover:text-on_primary' }}"
+                    aria-current="{{ request()->routeIs('admin.mutasi.*') ? 'page' : 'false' }}">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                    </svg>
+                    <span class="text-label-md font-medium">Mutasi Kelas</span>
+                </a>
+
+                {{-- Pengaturan Web --}}
+                <a href="{{ route('admin.settings.index') }}" id="nav-admin-settings" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-xl
+                      {{ request()->routeIs('admin.settings.*')
+    ? 'bg-white/20 text-on_primary'
+    : 'text-on_primary_container hover:bg-white/10 hover:text-on_primary' }}"
+                    aria-current="{{ request()->routeIs('admin.settings.*') ? 'page' : 'false' }}">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                        aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span class="text-label-md font-medium">Pengaturan Web</span>
+                </a>
             </nav>
 
             {{-- Logout — tonal dark overlay, no border --}}
@@ -179,8 +218,7 @@
                     <div class="flex items-center gap-4 min-w-0">
 
                         {{-- Hamburger button — hanya muncul di mobile --}}
-                        <button id="mobile-menu-btn"
-                            class="md:hidden text-primary focus:outline-none flex-shrink-0"
+                        <button id="mobile-menu-btn" class="md:hidden text-primary focus:outline-none flex-shrink-0"
                             aria-label="Buka menu">
                             <span class="material-symbols-outlined text-2xl leading-none">menu</span>
                         </button>
@@ -250,7 +288,7 @@
             {{-- FOOTER — surface-container-low tones off from surface. No border. --}}
             <footer class="flex-shrink-0 bg-surface-container-low" role="contentinfo">
                 <div class="px-8 py-4 lg:px-12 flex items-center justify-between gap-4">
-                    <p class="text-label-sm text-on_surface_variant">&copy; {{ date('Y') }} SIMAS — Sistem Informasi
+                    <p class="text-label-sm text-on_surface_variant">&copy; {{ date('Y') }} SIMAS — Sistem
                         Manajemen Absensi Sekolah</p>
                     <p class="text-label-sm text-on_surface_variant">v1.0.0</p>
                 </div>
@@ -261,15 +299,13 @@
     </div>
 
     {{-- Mobile backdrop overlay --}}
-    <div id="sidebar-overlay"
-         class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm hidden"
-         aria-hidden="true"></div>
+    <div id="sidebar-overlay" class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm hidden" aria-hidden="true"></div>
 
     <script>
         (function () {
-            const sidebar  = document.getElementById('sidebar');
-            const overlay  = document.getElementById('sidebar-overlay');
-            const menuBtn  = document.getElementById('mobile-menu-btn');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const menuBtn = document.getElementById('mobile-menu-btn');
             const closeBtn = document.getElementById('close-sidebar-btn');
 
             function openSidebar() {
@@ -284,13 +320,24 @@
                 document.body.style.overflow = '';
             }
 
-            if (menuBtn)  menuBtn.addEventListener('click', openSidebar);
+            if (menuBtn) menuBtn.addEventListener('click', openSidebar);
             if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
-            if (overlay)  overlay.addEventListener('click', closeSidebar);
+            if (overlay) overlay.addEventListener('click', closeSidebar);
         })();
     </script>
 
     @stack('scripts')
+
+    {{-- ─── PWA Service Worker Registration ─────────────────────────────────── --}}
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function (reg) { console.log('[PWA] SW registered:', reg.scope); })
+                    .catch(function (err) { console.warn('[PWA] SW registration failed:', err); });
+            });
+        }
+    </script>
 </body>
 
 </html>

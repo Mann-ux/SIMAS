@@ -134,9 +134,10 @@
                                     Detail
                                 </a>
                                 <button type="button"
-                                        onclick="confirmDelete({{ $classroom->id }})"
-                                        class="px-4 py-2 text-xs font-manrope font-bold text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                                    Hapus
+                                        onclick="confirmArchive({{ $classroom->id }}, '{{ addslashes($classroom->name) }}')"
+                                        class="px-4 py-2 text-xs font-manrope font-bold text-amber-600 hover:bg-amber-50 rounded-lg transition-colors flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[15px]">inventory_2</span>
+                                    Arsip
                                 </button>
                                 <form id="delete-form-{{ $classroom->id }}" action="{{ route('classrooms.destroy', $classroom->id) }}" method="POST" class="hidden">
                                     @csrf
@@ -203,10 +204,11 @@
                         </a>
                         <button
                             type="button"
-                            onclick="confirmDelete({{ $classroom->id }})"
-                            class="flex-1 text-center px-4 py-2 text-xs font-manrope font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                            onclick="confirmArchive({{ $classroom->id }}, '{{ addslashes($classroom->name) }}')"
+                            class="flex-1 text-center px-4 py-2 text-xs font-manrope font-bold text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors flex items-center justify-center gap-1"
                         >
-                            Hapus
+                            <span class="material-symbols-outlined text-[15px]">inventory_2</span>
+                            Arsip
                         </button>
                         <form id="delete-form-{{ $classroom->id }}" action="{{ route('classrooms.destroy', $classroom->id) }}" method="POST" class="hidden">
                             @csrf
@@ -240,22 +242,20 @@
 
 @push('scripts')
 <script>
-    function confirmDelete(classroomId) {
+    function confirmArchive(classroomId, classroomName) {
         Swal.fire({
-            title: 'Hapus Kelas?',
-            text: 'Yakin ingin menghapus kelas ini beserta jadwal di dalamnya?',
+            title: 'Arsipkan Kelas?',
+            text: 'Kelas "' + classroomName + '" akan dipindahkan ke arsip dan tidak tampil di daftar aktif.',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Yes',
+            confirmButtonText: 'Ya, Arsipkan',
             cancelButtonText: 'Batal',
-            confirmButtonColor: '#dc2626',
-            cancelButtonColor: '#6b7280',
             buttonsStyling: false,
             customClass: {
                 popup: 'bg-white rounded-2xl shadow-2xl border border-gray-100',
                 title: 'text-2xl font-bold text-gray-800',
                 htmlContainer: 'text-base text-gray-500 mt-2',
-                confirmButton: 'mt-4 bg-blue-900 hover:bg-blue-800 text-white font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95',
+                confirmButton: 'mt-4 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95',
                 cancelButton: 'mt-4 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 px-8 rounded-xl transition-colors active:scale-95 ml-2'
             }
         }).then((result) => {

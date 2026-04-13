@@ -13,23 +13,27 @@
 
 {{-- ── WELCOME HEADER ────────────────────────────────────────── --}}
 <div class="mb-6">
-    <h2 class="text-2xl font-bold text-blue-900">Selamat Datang di Kelas {{ $classroom?->name ?? 'XII' }} SMA 1</h2>
-    <p class="text-sm text-gray-500">Sistem Informasi Manajemen Akademik & Siswa</p>
+    <div class="flex items-center gap-2 mb-3">
+        <span class="w-10 h-[3px] bg-blue-900 rounded-full"></span>
+        <span class="text-xs font-bold text-gray-400 tracking-[0.2em] uppercase">BERANDA KELAS</span>
+    </div>
+    <h1 class="text-3xl md:text-4xl font-extrabold text-blue-900">Selamat Datang di Kelas {{ $classroom?->name ?? 'XI-1' }} SMAN 1 Kembang</h1>
+    <p class="text-sm md:text-base text-gray-500 max-w-2xl">Sistem Informasi Manajemen Akademik & Siswa</p>
 </div>
 
 {{-- ── BANNER STATUS ABSENSI ─────────────────────────────────── --}}
 @if($recap_hari_ini)
 <div class="mb-12">
-    <div class="bg-emerald-400 rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between border-l-8 border-emerald-700 shadow-sm gap-4">
+    <div class="bg-emerald-50 rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between border-l-8 border-emerald-500 shadow-sm gap-4">
         <div class="flex items-center gap-4">
             <div class="bg-emerald-500/50 p-3 rounded-full flex items-center justify-center flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-emerald-900">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8 text-emerald-800">
                   <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" />
                 </svg>
             </div>
             <div>
-                <h2 class="font-bold text-emerald-950 text-xl tracking-tight">Status Absensi Hari Ini</h2>
-                <p class="text-emerald-900 font-medium">SUDAH DIISI PADA {{ $lastUpdate ? $lastUpdate->updated_at->format('H:i') : \Carbon\Carbon::now()->format('H:i') }} WIB</p> 
+                <h2 class="font-bold text-emerald-800 text-xl tracking-tight">Status Absensi Hari Ini</h2>
+                <p class="text-emerald-900/80 font-medium">SUDAH DIISI PADA {{ $lastUpdate ? $lastUpdate->updated_at->format('H:i') : \Carbon\Carbon::now()->format('H:i') }} WIB</p> 
             </div>
         </div>
         <a href="{{ route('wali-kelas.absen.create') }}" class="bg-blue-900 text-white px-6 py-3 rounded-xl font-bold text-sm tracking-wide shadow-md hover:bg-blue-800 transition-all active:scale-95 inline-block text-center flex-shrink-0 whitespace-nowrap">
@@ -39,19 +43,19 @@
 </div>
 @else
 <div class="mb-12">
-    <div class="bg-amber-400 rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between border-l-8 border-amber-600 shadow-sm gap-4">
+    <div class="bg-amber-50 rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between border-l-8 border-amber-500 shadow-sm gap-4">
         <div class="flex items-center gap-4">
             <div class="bg-amber-500/50 p-3 rounded-full flex items-center justify-center flex-shrink-0">
-                <svg class="w-8 h-8 text-amber-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-8 h-8 text-amber-950" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                 </svg>
             </div>
             <div>
                 <h2 class="font-bold text-amber-950 text-xl tracking-tight">Status Absensi Hari Ini</h2>
-                <p class="text-amber-900 font-medium">BELUM DIISI hari ini</p>
+                <p class="text-amber-900/80 font-medium">Data absensi belum diisi untuk hari ini.</p>
             </div>
         </div>
-        <a href="{{ route('wali-kelas.absen.create') }}" class="bg-blue-900 text-white px-6 py-3 rounded-xl font-bold text-sm tracking-wide shadow-md hover:bg-blue-800 transition-all active:scale-95 inline-block text-center flex-shrink-0 whitespace-nowrap">
+        <a href="{{ route('wali-kelas.absen.create') }}" class="bg-blue-900 text-white px-6 py-3 rounded-xl font-bold text-sm tracking-wide shadow-md hover:bg-blue-800 transition-all animate-pulse active:scale-95 inline-block text-center flex-shrink-0 whitespace-nowrap">
             INPUT SEKARANG
         </a>
     </div>
@@ -130,11 +134,14 @@
                     </svg>
                     <span class="font-semibold text-sm md:text-base">Input Nilai Harian</span>
                 </a>
-                <button class="flex items-center gap-3 md:gap-4 bg-[#264191] hover:bg-[#2e4da7] p-3 md:p-4 rounded-xl transition-all active:scale-95 text-left">
-                    <svg class="w-5 h-5 text-[#90a8ff] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-                    </svg>
-                    <span class="font-semibold text-sm md:text-base">Kirim Broadcast</span>
+                <button class="flex items-center justify-between bg-[#264191] p-3 md:p-4 rounded-xl transition-all text-left opacity-60 cursor-not-allowed pointer-events-none">
+                    <div class="flex items-center gap-3 md:gap-4">
+                        <svg class="w-5 h-5 text-[#90a8ff] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                        <span class="font-semibold text-sm md:text-base">Kirim Broadcast</span>
+                    </div>
+                    <span class="ml-auto text-[10px] font-bold bg-white/20 text-white px-2 py-0.5 rounded-full uppercase tracking-wider">Segera</span>
                 </button>
                 <a href="{{ route('wali-kelas.recap') }}"
                    class="flex items-center gap-3 md:gap-4 bg-[#264191] hover:bg-[#2e4da7] p-3 md:p-4 rounded-xl transition-all active:scale-95 text-left">
@@ -184,8 +191,8 @@
     <div class="order-last lg:order-first lg:col-span-7 bg-white rounded-xl shadow-sm p-6 md:p-8">
         <div class="flex justify-between items-start mb-6 md:mb-8">
             <div>
-                <h2 class="text-xl font-bold text-[#00236f]">Siswa Perlu Perhatian</h2>
-                <p class="text-slate-500 text-sm mt-1">Segera tindak lanjuti ketidakhadiran berikut</p>
+                <h2 class="text-xl font-bold text-[#00236f]">Daftar Ketidakhadiran</h2>
+                <p class="text-slate-500 text-sm mt-1">Pantauan siswa dengan status Sakit, Izin, atau Alpa hari ini.</p>
             </div>
             <a href="{{ route('wali-kelas.absen.create') }}"
                class="text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-[#00236f] transition-colors">
@@ -239,26 +246,9 @@
             @endforelse
         </div>
 
-        <div class="mt-6 pt-4">
-            <a href="{{ route('wali-kelas.absen.create') }}"
-               class="w-full block text-center text-[#00236f] font-bold text-sm hover:underline decoration-2 underline-offset-4">
-                Lihat Semua Riwayat
-            </a>
-        </div>
     </div>
 
 </section>
-
-{{-- ── DECORATIVE FOOTER BANNER ─────────────────────────────── --}}
-<div class="mt-6 w-full h-40 md:h-48 rounded-xl overflow-hidden relative group">
-    <div class="absolute inset-0 bg-gradient-to-r from-[#00236f] to-[#1e3a8a] opacity-90"></div>
-    <div class="absolute inset-0 p-6 md:p-10 flex flex-col justify-end">
-        <h4 class="text-white font-bold text-xl md:text-2xl">Visi Akademik 2024</h4>
-        <p class="text-white/70 text-xs md:text-sm max-w-md mt-2 italic">
-            "Membangun generasi unggul melalui disiplin digital dan kurikulum yang inklusif."
-        </p>
-    </div>
-</div>
 
 @else
 

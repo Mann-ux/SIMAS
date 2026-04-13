@@ -23,6 +23,7 @@ class Classroom extends Model
         'academic_year_id',
         'ketua_id',
         'sekretaris_id',
+        'status',
     ];
 
     /**

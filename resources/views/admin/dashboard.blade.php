@@ -190,34 +190,34 @@
     </div>
 
     {{-- ═══ PANEL UNDUH LAPORAN BULANAN ═════════════════════════════════════════ --}}
-    <form action="#" method="GET" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-12">
+    <form action="{{ url('/admin/rekap/export') }}" method="GET" class="bg-white rounded-xl shadow-sm p-6 mb-12">
         <h3 class="text-xl font-bold text-gray-800">Unduh Laporan Rekapitulasi</h3>
 
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end mt-4">
             <div>
                 <label for="periode" class="text-sm font-bold text-gray-500 uppercase block mb-2">PERIODE</label>
-                <select id="periode" name="periode" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <select id="periode" name="periode" class="bg-slate-100 border-0 text-gray-800 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 block w-full px-4 py-2.5">
                     <option value="2026-04">April 2026</option>
                 </select>
             </div>
 
             <div>
                 <label for="tingkat" class="text-sm font-bold text-gray-500 uppercase block mb-2">TINGKAT</label>
-                <select id="tingkat" name="tingkat" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="">Pilih Tingkat</option>
-                    <option value="X">X</option>
-                    <option value="XI">XI</option>
-                    <option value="XII SMA">XII SMA</option>
+                <select id="tingkat" name="tingkat" class="bg-slate-100 border-0 text-gray-800 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 block w-full px-4 py-2.5">
+                    <option value="all" {{ request('tingkat', 'all') === 'all' ? 'selected' : '' }}>Semua Tingkat</option>
+                    <option value="X" {{ request('tingkat') === 'X' ? 'selected' : '' }}>X</option>
+                    <option value="XI" {{ request('tingkat') === 'XI' ? 'selected' : '' }}>XI</option>
+                    <option value="XII SMA" {{ request('tingkat') === 'XII SMA' ? 'selected' : '' }}>XII SMA</option>
                 </select>
             </div>
 
             <div>
                 <label for="rombel" class="text-sm font-bold text-gray-500 uppercase block mb-2">ROMBEL / KELAS</label>
-                <select id="rombel" name="rombel" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                    <option value="">Pilih Rombel</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
+                <select id="rombel" name="rombel" class="bg-slate-100 border-0 text-gray-800 text-sm rounded-lg focus:ring-2 focus:ring-blue-500 block w-full px-4 py-2.5">
+                    <option value="all" {{ request('rombel', 'all') === 'all' ? 'selected' : '' }}>Semua Rombel</option>
+                    <option value="1" {{ request('rombel') === '1' ? 'selected' : '' }}>1</option>
+                    <option value="2" {{ request('rombel') === '2' ? 'selected' : '' }}>2</option>
+                    <option value="3" {{ request('rombel') === '3' ? 'selected' : '' }}>3</option>
                 </select>
             </div>
 
@@ -230,10 +230,7 @@
     </form>
 
     {{-- ═══ FOOTER META ══════════════════════════════════════════════════════════ --}}
-    <div class="pt-8 border-t border-on_surface_variant/10 flex flex-wrap justify-between items-center gap-4 text-[10px] uppercase tracking-widest text-on_surface_variant">
-        <span>Last Updated: {{ \Carbon\Carbon::parse($today)->translatedFormat('d F Y, H:i') }} WIB</span>
-        <span class="font-bold text-primary">SIMAS Scholastic Edition v2.0</span>
-    </div>
+    
 
 </div>
 @endsection

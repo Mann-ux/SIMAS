@@ -16,21 +16,24 @@ class StudentController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->input('search');
+        $search = trim((string) $request->input('search', ''));
 
         $studentsQuery = Student::with('classroom')
-            ->orderBy('nis');
-
-        if ($search) {
-            $studentsQuery->where(function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('nis', 'like', "%{$search}%");
+            ->orderBy('nis')
+            ->when($search, function ($query, $search) {
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery->where('nis', 'like', "%{$search}%")
+                        ->orWhere('name', 'like', "%{$search}%");
+                });
             });
-        }
 
         $students = $studentsQuery->paginate(10)->withQueryString();
 
-        return view('admin.students.index', compact('students', 'search'));
+        if ($request->ajax()) {
+            return view('admin.students.partials.table', compact('students'));
+        }
+
+        return view('admin.students.index', compact('students'));
     }
 
     /**

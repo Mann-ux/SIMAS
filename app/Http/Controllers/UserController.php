@@ -2,18 +2,37 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\UsersTemplateExport;
+use App\Imports\UsersImport;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Maatwebsite\Excel\Facades\Excel;
+use Throwable;
 
 class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::whereIn('role', ['admin', 'guru', 'wali_kelas'])->paginate(10);
+        $search = trim((string) $request->input('search', ''));
+
+        $users = User::whereIn('role', ['admin', 'guru', 'wali_kelas'])
+            ->when($search, function ($query, $search) {
+                $query->where(function ($subQuery) use ($search) {
+                    $subQuery->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
+            ->paginate(10)
+            ->withQueryString();
+
+        if ($request->ajax()) {
+            return view('admin.users.partials.table', compact('users'));
+        }
+
         return view('admin.users.index', compact('users'));
     }
 
@@ -89,5 +108,35 @@ class UserController extends Controller
 
         return redirect()->route('users.index')
             ->with('success', 'User berhasil dihapus!');
+    }
+
+    /**
+     * Import data user dari file Excel/CSV.
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
+
+        try {
+            Excel::import(new UsersImport, $request->file('file'));
+
+            return redirect()->route('users.index')
+                ->with('success', 'Import data user berhasil diproses.');
+        } catch (Throwable $e) {
+            report($e);
+
+            return redirect()->route('users.index')
+                ->with('error', 'Import gagal. Pastikan format file sudah benar dan coba lagi.');
+        }
+    }
+
+    /**
+     * Download template Excel untuk import user.
+     */
+    public function downloadTemplate()
+    {
+        return Excel::download(new UsersTemplateExport, 'Template_Import_Guru.xlsx');
     }
 }

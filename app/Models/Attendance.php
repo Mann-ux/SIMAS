@@ -22,6 +22,8 @@ class Attendance extends Model
         'status',
         'recorded_by_id',
         'keterangan',
+        'latitude',
+        'longitude',
     ];
 
     /**

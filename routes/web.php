@@ -1,11 +1,25 @@
 <?php
 
-use App\Http\Controllers\LandingPageController;
+use App\Models\Classroom;
+use App\Models\Student;
+use App\Models\User;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [LandingPageController::class, 'index'])->name('landing');
+Route::get('/', function () {
+    $classrooms = Classroom::query()
+        ->withCount('students')
+        ->orderBy('tingkat')
+        ->orderBy('name')
+        ->get();
+
+    $totalKelas = Classroom::count();
+    $totalSiswa = Student::count();
+    $totalGuru  = User::where('role', 'wali_kelas')->count();
+
+    return view('landing', compact('classrooms', 'totalKelas', 'totalSiswa', 'totalGuru'));
+})->name('landing');
 
 // Route Group untuk Admin
 Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
@@ -68,7 +82,20 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/students/template', [\App\Http\Controllers\StudentController::class, 'downloadTemplate'])->name('students.template');
     Route::post('/students/import', [\App\Http\Controllers\StudentController::class, 'importExcel'])->name('students.import');
     Route::resource('students', \App\Http\Controllers\StudentController::class)->except(['show']);
+    Route::get('/users/template/download', [\App\Http\Controllers\UserController::class, 'downloadTemplate'])->name('users.template.download');
+    Route::post('/users/import', [\App\Http\Controllers\UserController::class, 'import'])->name('users.import');
     Route::resource('users', \App\Http\Controllers\UserController::class)->except(['show']);
+    Route::get('/rekap/export', [\App\Http\Controllers\AttendanceController::class, 'exportExcelAdmin'])->name('admin.recap.export');
+
+    // Mutasi / Kenaikan Kelas
+    Route::get('/mutasi',          [\App\Http\Controllers\MutasiController::class, 'index'])->name('admin.mutasi.index');
+    Route::post('/mutasi',         [\App\Http\Controllers\MutasiController::class, 'store'])->name('admin.mutasi.store');
+    Route::get('/mutasi/export',   [\App\Http\Controllers\MutasiController::class, 'exportExcel'])->name('admin.mutasi.export');
+    Route::post('/mutasi/import',  [\App\Http\Controllers\MutasiController::class, 'importExcel'])->name('admin.mutasi.import');
+
+    // Pengaturan Website
+    Route::get('/pengaturan-web',  [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('admin.settings.index');
+    Route::post('/pengaturan-web', [\App\Http\Controllers\Admin\SettingController::class, 'update'])->name('admin.settings.update');
 });
 
 // Route Group untuk Wali Kelas

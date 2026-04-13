@@ -8,6 +8,8 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithTitle;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison; // Ini senjata rahasia biar 0 tetap jadi 0
 use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -16,17 +18,21 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Color;
 use PhpOffice\PhpSpreadsheet\Style\Conditional;
 
-class AttendanceExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles, WithEvents
+class AttendanceExport implements FromCollection, WithHeadings, WithMapping, ShouldAutoSize, WithStyles, WithEvents, WithTitle, WithStrictNullComparison
 {
     protected $data_absensi;
     protected $nomor_urut = 0;
     protected $judul_laporan;
+    protected $sheetTitle;
+    protected $namaKelas;
 
     // Menangkap data yang dilempar dari Controller
-    public function __construct($data_absensi, $month = null, $year = null)
+    public function __construct($data_absensi, $month = null, $year = null, ?string $sheetTitle = null)
     {
         $this->data_absensi = $data_absensi;
-        $this->judul_laporan = $this->buildReportTitle($month, $year);
+        $this->sheetTitle = $sheetTitle;
+        $this->namaKelas = $this->resolveClassName();
+        $this->judul_laporan = $this->buildReportTitle($month, $year, $this->namaKelas);
     }
 
     public function collection()
@@ -34,7 +40,6 @@ class AttendanceExport implements FromCollection, WithHeadings, WithMapping, Sho
         return $this->data_absensi;
     }
 
-    // 1. Bikin Baris Judul Paling Atas
     public function headings(): array
     {
         return [
@@ -44,51 +49,48 @@ class AttendanceExport implements FromCollection, WithHeadings, WithMapping, Sho
         ];
     }
 
-    // 2. Mapping Data (Nyocokin data dari database ke kolom Excel)
+    // Mapping Data
     public function map($row): array
     {
         $this->nomor_urut++;
 
-        $attendances = $row->attendances ?? collect();
+        $hadir = 0; $izin = 0; $sakit = 0; $alpa = 0;
 
-        $totalHadir = (int) ($attendances->where('status', 'Hadir')->count() ?? 0);
-        $totalIzin = (int) ($attendances->where('status', 'Izin')->count() ?? 0);
-        $totalSakit = (int) ($attendances->where('status', 'Sakit')->count() ?? 0);
-        $totalAlpa = (int) ($attendances->where('status', 'Alpa')->count() ?? 0);
-
-        // Pastikan selalu angka, jangan pernah kosong/null
-        $hadir = $totalHadir ?? 0;
-        $izin = $totalIzin ?? 0;
-        $sakit = $totalSakit ?? 0;
-        $alpa = $totalAlpa ?? 0;
+        if (isset($row->attendances) && $row->attendances->count() > 0) {
+            $hadir = (int) $row->attendances->where('status', 'Hadir')->count();
+            $izin  = (int) $row->attendances->where('status', 'Izin')->count();
+            $sakit = (int) $row->attendances->where('status', 'Sakit')->count();
+            $alpa  = (int) $row->attendances->where('status', 'Alpa')->count();
+        } else {
+            $hadir = (int) ($row->hadir ?? 0);
+            $izin  = (int) ($row->izin ?? 0);
+            $sakit = (int) ($row->sakit ?? 0);
+            $alpa  = (int) ($row->alpa ?? 0);
+        }
 
         $totalKehadiran = $hadir + $izin + $sakit + $alpa;
-        $persentase = $totalKehadiran > 0
-            ? round(($hadir / $totalKehadiran) * 100)
-            : 0;
+        $persentase = $totalKehadiran > 0 ? round(($hadir / $totalKehadiran) * 100) : 0;
 
         return [
             $this->nomor_urut,
             $row->nis ?? '-',
             $row->name ?? '-',
-            $hadir ?? 0,
-            $izin ?? 0,
-            $sakit ?? 0,
-            $alpa ?? 0,
+            $hadir,
+            $izin,
+            $sakit,
+            $alpa,
             $persentase . '%',
         ];
     }
 
-    // 3. Styling Premium (Warna Header Navy & Teks Putih)
     public function styles(Worksheet $sheet)
     {
         return [
-            // Style khusus baris header tabel (baris ke-3)
             3 => [
                 'font' => ['bold' => true, 'color' => ['argb' => Color::COLOR_WHITE]],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID, 
-                    'startColor' => ['argb' => 'FF1E3A8A'] // Kode warna biru Navy
+                    'startColor' => ['argb' => 'FF1E3A8A'] 
                 ],
             ],
         ];
@@ -102,16 +104,33 @@ class AttendanceExport implements FromCollection, WithHeadings, WithMapping, Sho
 
                 $headerRow = 3;
                 $firstDataRow = 4;
-                $lastDataRow = $firstDataRow + $this->data_absensi->count() - 1;
+                $lastRow = $firstDataRow + $this->data_absensi->count() - 1;
 
-                // Jika data kosong, biarkan rentang aman tetap valid
-                if ($lastDataRow < $firstDataRow) {
-                    $lastDataRow = $firstDataRow;
+                if ($lastRow < $firstDataRow) {
+                    $lastRow = $firstDataRow;
                 }
 
-                $grandTotalRow = $lastDataRow + 1;
+                $totalRow = $lastRow + 1;
 
-                // Judul laporan
+                // --- KALKULASI TOTAL MENGGUNAKAN PHP (Bypass Bug Excel Formula) ---
+                $sumH = 0; $sumI = 0; $sumS = 0; $sumA = 0;
+                foreach ($this->data_absensi as $row) {
+                    if (isset($row->attendances) && $row->attendances->count() > 0) {
+                        $sumH += (int) $row->attendances->where('status', 'Hadir')->count();
+                        $sumI += (int) $row->attendances->where('status', 'Izin')->count();
+                        $sumS += (int) $row->attendances->where('status', 'Sakit')->count();
+                        $sumA += (int) $row->attendances->where('status', 'Alpa')->count();
+                    } else {
+                        $sumH += (int) ($row->hadir ?? 0);
+                        $sumI += (int) ($row->izin ?? 0);
+                        $sumS += (int) ($row->sakit ?? 0);
+                        $sumA += (int) ($row->alpa ?? 0);
+                    }
+                }
+                $totalAll = $sumH + $sumI + $sumS + $sumA;
+                $percAll = $totalAll > 0 ? round(($sumH / $totalAll) * 100) . '%' : '0%';
+
+                // Judul Laporan
                 $sheet->mergeCells('A1:H1');
                 $sheet->setCellValue('A1', $this->judul_laporan);
                 $sheet->getStyle('A1')->applyFromArray([
@@ -130,17 +149,16 @@ class AttendanceExport implements FromCollection, WithHeadings, WithMapping, Sho
                     ],
                 ]);
 
-                // Freeze pane supaya header tabel tetap terlihat
                 $sheet->freezePane('A4');
 
-                // Center alignment untuk kolom H, I, S, A, dan Persentase
-                $sheet->getStyle("D{$headerRow}:H{$grandTotalRow}")
-                    ->getAlignment()
-                    ->setHorizontal(Alignment::HORIZONTAL_CENTER)
-                    ->setVertical(Alignment::VERTICAL_CENTER);
+                // --- ALIGNMENT MUTLAK ---
+                $sheet->getStyle("A3:H{$totalRow}")->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+                $sheet->getStyle("A3:A{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("B3:C{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+                $sheet->getStyle("D3:H{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-                // Border semua area tabel (header + data + total)
-                $sheet->getStyle("A{$headerRow}:H{$grandTotalRow}")
+                // Border tabel
+                $sheet->getStyle("A{$headerRow}:H{$totalRow}")
                     ->applyFromArray([
                         'borders' => [
                             'allBorders' => [
@@ -150,29 +168,34 @@ class AttendanceExport implements FromCollection, WithHeadings, WithMapping, Sho
                         ],
                     ]);
 
-                // Baris Grand Total
-                $sheet->mergeCells("A{$grandTotalRow}:C{$grandTotalRow}");
-                $sheet->setCellValue("A{$grandTotalRow}", 'TOTAL KESELURUHAN');
-                $sheet->setCellValue("D{$grandTotalRow}", "=SUM(D{$firstDataRow}:D{$lastDataRow})");
-                $sheet->setCellValue("E{$grandTotalRow}", "=SUM(E{$firstDataRow}:E{$lastDataRow})");
-                $sheet->setCellValue("F{$grandTotalRow}", "=SUM(F{$firstDataRow}:F{$lastDataRow})");
-                $sheet->setCellValue("G{$grandTotalRow}", "=SUM(G{$firstDataRow}:G{$lastDataRow})");
-                $sheet->setCellValue("H{$grandTotalRow}", "=IFERROR(ROUND(D{$grandTotalRow}/SUM(D{$grandTotalRow}:G{$grandTotalRow})*100,0),0)&\"%\"");
+                // --- BARIS GRAND TOTAL ---
+                $sheet->mergeCells("A{$totalRow}:C{$totalRow}");
+                $sheet->setCellValue("A{$totalRow}", 'TOTAL KESELURUHAN');
+                
+                // Tembak hasil PHP langsung ke cell (Tanpa pakai =SUM)
+                $sheet->setCellValue("D{$totalRow}", $sumH);
+                $sheet->setCellValue("E{$totalRow}", $sumI);
+                $sheet->setCellValue("F{$totalRow}", $sumS);
+                $sheet->setCellValue("G{$totalRow}", $sumA);
+                $sheet->setCellValue("H{$totalRow}", $percAll);
 
-                $sheet->getStyle("A{$grandTotalRow}:H{$grandTotalRow}")->applyFromArray([
+                $sheet->getStyle("A{$totalRow}:H{$totalRow}")->applyFromArray([
                     'font' => ['bold' => true],
                     'fill' => [
                         'fillType' => Fill::FILL_SOLID,
-                        'startColor' => ['argb' => 'FFE2E8F0'],
+                        'startColor' => ['argb' => 'FFE2E8F0'], 
                     ],
                 ]);
+                
+                $sheet->getStyle("A{$totalRow}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
-                // Tinggi baris data siswa supaya lebih lega
-                for ($row = $firstDataRow; $row <= $lastDataRow; $row++) {
+                // Tinggi Baris
+                for ($row = $firstDataRow; $row <= $lastRow; $row++) {
                     $sheet->getRowDimension($row)->setRowHeight(22);
                 }
+                $sheet->getRowDimension($totalRow)->setRowHeight(22);
 
-                // Conditional formatting: kolom Alpa (G) > 2 jadi merah terang
+                // Conditional formatting
                 $conditional = new Conditional();
                 $conditional->setConditionType(Conditional::CONDITION_CELLIS)
                     ->setOperatorType(Conditional::OPERATOR_GREATERTHAN)
@@ -182,37 +205,63 @@ class AttendanceExport implements FromCollection, WithHeadings, WithMapping, Sho
                     ->setFillType(Fill::FILL_SOLID)
                     ->getStartColor()->setARGB('FFFF9999');
 
-                $existingConditions = $sheet->getStyle("G{$firstDataRow}:G{$lastDataRow}")->getConditionalStyles();
+                $existingConditions = $sheet->getStyle("G{$firstDataRow}:G{$lastRow}")->getConditionalStyles();
                 $existingConditions[] = $conditional;
-                $sheet->getStyle("G{$firstDataRow}:G{$lastDataRow}")->setConditionalStyles($existingConditions);
+                $sheet->getStyle("G{$firstDataRow}:G{$lastRow}")->setConditionalStyles($existingConditions);
             },
         ];
     }
 
-    private function buildReportTitle($month = null, $year = null): string
+    private function buildReportTitle($month = null, $year = null, ?string $className = null): string
     {
         if ($month === null || $year === null) {
-            return 'REKAPITULASI ABSENSI';
+            return $className
+                ? 'REKAPITULASI ABSENSI KELAS ' . $className
+                : 'REKAPITULASI ABSENSI';
         }
 
         $monthNames = [
-            '01' => 'JANUARI',
-            '02' => 'FEBRUARI',
-            '03' => 'MARET',
-            '04' => 'APRIL',
-            '05' => 'MEI',
-            '06' => 'JUNI',
-            '07' => 'JULI',
-            '08' => 'AGUSTUS',
-            '09' => 'SEPTEMBER',
-            '10' => 'OKTOBER',
-            '11' => 'NOVEMBER',
-            '12' => 'DESEMBER',
+            '01' => 'JANUARI', '02' => 'FEBRUARI', '03' => 'MARET', '04' => 'APRIL',
+            '05' => 'MEI', '06' => 'JUNI', '07' => 'JULI', '08' => 'AGUSTUS',
+            '09' => 'SEPTEMBER', '10' => 'OKTOBER', '11' => 'NOVEMBER', '12' => 'DESEMBER',
         ];
 
         $monthKey = str_pad((string) $month, 2, '0', STR_PAD_LEFT);
         $monthLabel = $monthNames[$monthKey] ?? strtoupper((string) $month);
 
-        return 'REKAPITULASI ABSENSI ' . $monthLabel . ' ' . $year;
+        $baseTitle = 'REKAPITULASI ABSENSI ' . $monthLabel . ' ' . $year;
+
+        return $className
+            ? $baseTitle . ' KELAS ' . $className
+            : $baseTitle;
+    }
+
+    private function resolveClassName(): ?string
+    {
+        $sheetTitle = trim((string) ($this->sheetTitle ?? ''));
+
+        if ($sheetTitle !== '' && strcasecmp($sheetTitle, 'Data Kosong') !== 0) {
+            return $sheetTitle;
+        }
+
+        $firstRow = $this->data_absensi->first();
+
+        if (!$firstRow) {
+            return null;
+        }
+
+        $classroomName = $firstRow->classroom->name
+            ?? $firstRow->classroom_name
+            ?? $firstRow->class_name
+            ?? null;
+
+        return $classroomName ? (string) $classroomName : null;
+    }
+
+    public function title(): string
+    {
+        $title = trim((string) ($this->sheetTitle ?: 'Rekap'));
+        $title = preg_replace('/[\\\\\/?\*\[\]:]/', '', $title) ?: 'Rekap';
+        return mb_substr($title, 0, 31);
     }
 }

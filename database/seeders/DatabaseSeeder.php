@@ -32,8 +32,8 @@ class DatabaseSeeder extends Seeder
         User::create([
             'nip'      => '199001012015011001',
             'name'     => 'Admin Sekolah',
-            'email'    => 'admin@sma.sch.id',
-            'password' => Hash::make('password'),
+            'email'    => 'admin@sman1kembang.sch.id',
+            'password' => Hash::make('adminKembang2026'),
             'role'     => 'admin',
         ]);
 
@@ -43,7 +43,7 @@ class DatabaseSeeder extends Seeder
         $guru = User::create([
             'nip'      => '197512152006041001',
             'name'     => 'Budi Santoso, S.Pd',
-            'email'    => 'budi.santoso@sma.sch.id',
+            'email'    => 'budi.santoso@sman.sch.id',
             'password' => Hash::make('password'),
             'role'     => 'wali_kelas',
         ]);
