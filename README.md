@@ -23,7 +23,7 @@ Pastikan server Anda sudah terinstal **PHP**, **MySQL**, **Composer**, dan **Bun
 
 **1. Clone Repository**
 ```bash
-git clone [https://github.com/username-anda/repo-simas.git](https://github.com/username-anda/repo-simas.git)
+https://github.com/Mann-ux/SIMAS
 cd repo-simas
 2. Install Dependencies
 
@@ -78,4 +78,4 @@ Email: budi.santoso@sma.sch.id
 
 Password: password
 
-(Catatan: Segera ubah password admin setelah sistem berhasil di-deploy ke server)
+(Catatan: jangan ubah password admin dulu setelah sistem berhasil di-deploy ke server, mau saya buat presentasi)
