@@ -1,59 +1,81 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+Markdown
+# 🏫 SIMAS (Sistem Manajemen Absensi) - SMAN 1 Kembang
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+SIMAS adalah aplikasi absensi siswa berbasis web yang dilengkapi dengan fitur **Geofencing (GPS)** dan **PWA (Progressive Web App)**. Aplikasi ini dirancang agar siswa hanya bisa melakukan presensi jika berada di dalam radius sekolah yang telah ditentukan, dan dapat diinstal layaknya aplikasi *native* di perangkat Android & iOS.
 
-## About Laravel
+## ✨ Fitur Utama
+- **Multi-Role Authentication:** Akses khusus untuk Admin, Wali Kelas, dan Siswa.
+- **Dynamic Geofencing:** Pengaturan titik kordinat (Latitude & Longitude) dan radius absensi dapat diubah secara langsung (Real-time) melalui *dashboard* Admin menggunakan peta interaktif.
+- **PWA Ready:** Aplikasi dapat diinstal ke *Homescreen* (Add to Home Screen) dan memiliki *Service Worker* untuk optimasi *caching*.
+- **Responsive UI:** Tampilan yang dioptimalkan untuk perangkat *mobile* (Mobile-First Design).
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🛠️ Tech Stack
+- **Framework:** Laravel 
+- **Frontend:** Tailwind CSS, Alpine.js, Blade
+- **Package Manager:** Bun & Composer
+- **Database:** MySQL
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🚀 Panduan Instalasi (Untuk Tim IT / Server)
 
-## Learning Laravel
+Pastikan server Anda sudah terinstal **PHP**, **MySQL**, **Composer**, dan **Bun** (sebagai pengganti Node.js/NPM).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+**1. Clone Repository**
+```bash
+git clone [https://github.com/username-anda/repo-simas.git](https://github.com/username-anda/repo-simas.git)
+cd repo-simas
+2. Install Dependencies
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Bash
+composer install
+bun install
+bun run build
+3. Setup Environment
+Duplikat file .env.example menjadi .env.
 
-## Laravel Sponsors
+Bash
+cp .env.example .env
+Sesuaikan konfigurasi database dan URL di file .env:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+Cuplikan kode
+APP_NAME="SIMAS SMAN 1 Kembang"
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=[https://simas.sman1kembang.sch.id](https://simas.sman1kembang.sch.id)
 
-### Premium Partners
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=nama_database_anda
+DB_USERNAME=user_database_anda
+DB_PASSWORD=password_database_anda
+4. Generate Key & Storage Link
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Bash
+php artisan key:generate
+php artisan storage:link
+5. Migrate & Seed Database
+Perintah ini akan membuat struktur tabel beserta data awal (Pengaturan GPS Sekolah & Akun Default).
 
-## Contributing
+Bash
+php artisan migrate:fresh --seed
+⚠️ PERHATIAN PENTING (System Requirements)
+Aplikasi ini menggunakan API Geolocation dan Service Worker (PWA). Oleh karena itu, aplikasi WAJIB dijalankan menggunakan protokol keamanan HTTPS (SSL). Jika dijalankan menggunakan HTTP biasa, fitur deteksi lokasi dan instalasi aplikasi di HP siswa tidak akan berfungsi.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+🔑 Akun Default (Testing)
+Gunakan kredensial berikut untuk masuk ke dalam sistem setelah instalasi selesai:
 
-## Code of Conduct
+Administrator
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Email: admin.baru@sman1kembang.sch.id
 
-## Security Vulnerabilities
+Password: KembangKuat2026!
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Wali Kelas (Guru)
 
-## License
+Email: budi.santoso@sma.sch.id
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Password: password
+
+(Catatan: Segera ubah password admin setelah sistem berhasil di-deploy ke server)
